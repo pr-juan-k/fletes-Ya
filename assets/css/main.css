@@ -1097,7 +1097,7 @@ section,
   min-height: 92vh; /* Asegura que el contenedor tenga una altura mínima */
   display: flex;
   align-items: center;
-  padding: 100px 0 80px 0;
+  padding: 80px 0 80px 0;
 }
 
 /* ESTILO CLAVE PARA LA IMAGEN DE FONDO */
