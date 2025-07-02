@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>fletes-YA</title>
+  <meta name="description" content="Fletes-Ya:¡Ingresa ahora y cotiza tu viaje de forma rápida y sencilla! Tu empresa de fletes y mudanzas con más de 10 años de experiencia en Tucumán. Servicios profesionales, puntuales y responsables. ¡Ingresa ahora y cotiza tu viaje de forma rápida y sencilla!">
+  <meta name="keywords" content="fletes, mudanzas, transporte, camiones, fletes Tucumán, mudanzas Tucumán, fletes San Miguel de Tucumán, transporte de carga, fletes económicos, mudanzas urgentes, cotizar flete, fletes y mudanzas Tucumán, servicio de fletes, fletes confiables, empresa de fletes, transportes">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+
+      <a href="index.html" class="logo d-flex align-items-center">
+        
+        <img src="assets/img/myAddfFT/fletes-YA-1.jpg" alt=""  class="myLog">
+  
+       <!-- <h1 class="sitename">fletest-YA</h1>-->
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+            <li><a href="index.html" class="active"><i class="bi bi-house-door"></i> Inicio</a></li>
+            <li><a href="#fletesya-calculator"><i class="bi bi-calculator"></i> Ir A Cotizar</a></li>
+            <li><a href="reservados.html"><i class="bi bi-bookmark-check"></i> Reservados</a></li>
+
+            <li><a href="viajes-realizados.html"><i class="bi bi-geo-alt"></i> Viajes Realizados</a></li>
+            <li><a href="registro.html"><i class="bi bi-person-plus"></i> Registrarse</a></li>
+            <li><a href="contacto.html"><i class="bi bi-envelope"></i> Contactos</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+    </nav>
+
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero section dark-background">
+
+      <div class="hero-container">
+        <img src="assets/img/myAddfFT/portaDA.jpg" alt="Imagen de Fondo" class="video-background">
+        
+        <div class="overlay"></div>
+        
+        <div class="container">
+          <div class="row align-items-center">
+            
+            <div class="col-lg-5" data-aos="zoom-out" data-aos-delay="200">
+              <div class="stats-card">
+                  <div class="stats-header">
+
+                      <h3>Fletes-Ya - Cotiza tu Viaje</h3>
+                      <div class="decoration-line"></div>
+                  </div>
+
+                  <div class="php-email-form">
+                        <div class="col-md-12 mb-4" id="route-map-container" style="display:none;">
+                          <h5>Ruta Trazada:</h5>
+                          <div id="route-map" class="results-map-container"></div>
+                        </div>
+                        <div class="col-md-12 mb-4" id="results-section" style="display:none;">
+                            <h5>Resultados del Viaje:</h5>
+                            <p>Distancia estimada: <strong id="distance-output"></strong></p>
+                            <p>Costo total del viaje: <strong id="cost-output"></strong></p>
+                            <div class="text-center mt-3">
+                                <button type="button" id="reset-button" class="btn btn-danger">Reiniciar Cotización</button>
+                            </div>
+                        </div>
+
+                      
+
+                      <hr class="my-4">
+                      <h3>Ingresa el INICIO del viaje y el destino</h3>
+                      <div class="row gy-4">
+                          <div class="col-md-12">
+                              <label for="addressA-input" class="pb-2">Punto A (Origen):</label>
+                              <div class="input-group">
+                                  <input type="text" id="addressA-input" class="form-control" placeholder="Ej: Av. Roca 100, Tucumán">
+                                  <button type="button" class="btn btn-outline-secondary" id="geocode-A-btn">Buscar</button>
+                              </div>
+                              <button type="button" class="btn btn-info mt-2 w-100 text-white" data-bs-toggle="modal" data-bs-target="#mapModal" data-point-type="A">Seleccionar en Mapa (Punto A)</button>
+                              <input type="hidden" id="latA">
+                              <input type="hidden" id="lngA">
+                              <input type="hidden" id="display-addressA">
+                          </div>
+
+                          <div class="col-md-12 mt-3">
+                              <label for="addressB-input" class="pb-2">Punto B (Destino):</label>
+                              <div class="input-group">
+                                  <input type="text" id="addressB-input" class="form-control" placeholder="Ej: San Martín 500, Tucumán">
+                                  <button type="button" class="btn btn-outline-secondary" id="geocode-B-btn">Buscar</button>
+                              </div>
+                              <button type="button" class="btn btn-info mt-2 w-100 text-white" data-bs-toggle="modal" data-bs-target="#mapModal" data-point-type="B">Seleccionar en Mapa (Punto B)</button>
+                              <input type="hidden" id="latB">
+                              <input type="hidden" id="lngB">
+                              <input type="hidden" id="display-addressB">
+                          </div>
+
+                          <div class="col-md-12 text-center mt-4">
+                              <div class="loading" style="display:none;">Calculando...</div>
+                              <div class="error-message" style="display:none;"></div>
+
+                              <button type="button" id="calculate-distance-btn" class="btn btn-success">Calcular Distancia y Costo</button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+            </div><!--fin secion carg direccion-->
+            
+            <div class="col-lg-5" data-aos="zoom-out" data-aos-delay="200">
+              <div class="stats-card"> 
+                <div class="stats-header">
+                  <h3>Cargues datos para su cotización de flete</h3>
+                  <div class="decoration-line"></div>
+                </div>
+                
+                <form action="#" method="post" class="cotizacion-form">
+                  <div class="mb-3">
+                    <label class="form-label d-block">¿Necesita ayuda para cargar?</label>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="ayudaCargar" id="ayudaCargarSi" value="si">
+                      <label class="form-check-label" for="ayudaCargarSi">Sí</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="ayudaCargar" id="ayudaCargarNo" value="no">
+                      <label class="form-check-label" for="ayudaCargarNo">No</label>
+                    </div>
+                  </div>
+    
+                  <div class="mb-3">
+                    <label class="form-label d-block">¿Necesita ayuda para descargar?</label>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="ayudaDescargar" id="ayudaDescargarSi" value="si">
+                      <label class="form-check-label" for="ayudaDescargarSi">Sí</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="ayudaDescargar" id="ayudaDescargarNo" value="no">
+                      <label class="form-check-label" for="ayudaDescargarNo">No</label>
+                    </div>
+                  </div>
+    
+                  <div class="mb-3">
+                    <label class="form-label d-block">¿Hay ascensor en el origen/destino?</label>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="ascensor" id="ascensorSi" value="si">
+                      <label class="form-check-label" for="ascensorSi">Sí</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="ascensor" id="ascensorNo" value="no">
+                      <label class="form-check-label" for="ascensorNo">No</label>
+                    </div>
+                  </div>
+    
+                  <div class="mb-3">
+                    <label class="form-label d-block">¿Hay escaleras en el origen/destino?</label>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="escaleras" id="escalerasSi" value="si">
+                      <label class="form-check-label" for="escalerasSi">Sí</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="escaleras" id="escalerasNo" value="no">
+                      <label class="form-check-label" for="escalerasNo">No</label>
+                    </div>
+                  </div>
+    
+                  <div class="mb-3">
+                    <label for="tipoCarga" class="form-label">Cantidad de cargas</label>
+                    <select class="form-select" id="tipoCarga" name="tipoCarga">
+                      <option value="">Seleccione una opción</option>
+                      <option value="1-2">1 a 2 cargas</option>
+                      <option value="3-mas">3 o más cargas</option>
+                    </select>
+                  </div>
+    
+                  <div class="mb-3">
+                    <label class="form-label d-block">¿Cuándo desea el flete?</label>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="fechaFlete" id="solicitarAhora" value="ahora">
+                      <label class="form-check-label" for="solicitarAhora">Solicitar ahora</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="fechaFlete" id="programarFecha" value="programar">
+                      <label class="form-check-label" for="programarFecha">Programar fecha</label>
+                    </div>
+                  </div>
+    
+                  <div id="programarFechaCampos" style="display: none;">
+                    <div class="mb-3">
+                      <label for="fecha" class="form-label">Día</label>
+                      <input type="date" class="form-control" id="fecha" name="fecha">
+                    </div>
+                    <div class="mb-3">
+                      <label for="hora" class="form-label">Hora</label>
+                      <input type="time" class="form-control" id="hora" name="hora">
+                    </div>
+                  </div>
+    
+                  <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary">Solicitar Cotización</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <div class="event-ticker">
+        <div class="container">
+            <div class="row gy-4">
+                <div class="col-md-6 col-xl-4 col-12 ticker-item">
+                    <span class="date">DESDE 2005</span>
+                    <span class="title">Más de 19 Años de Experiencia en Fletes</span>
+                    <a href="about.html" class="btn-register">Conocenos</a>
+                </div>
+                
+                <div class="col-md-6 col-12 col-xl-4 ticker-item">
+                    <span class="date">NUESTRO COMPROMISO</span>
+                    <span class="title">Puntualidad Absoluta en Cada Entrega</span>
+                    <a href="#fletesya-calculator" class="btn-register">Cotizá Ya</a>
+                </div>
+                
+                <div class="col-md-6 col-12 col-xl-4 ticker-item">
+                    <span class="date">CLIENTES SATISFECHOS</span>
+                    <span class="title">El 98% nos Recomienda por Responsabilidad</span>
+                    <a href="testimonios.html" class="btn-register">Ver Reseñas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    </section>
+    
+    <!-- /Hero Section -->
+
+    <!-- mi calculos-->
+    
+    <!--seccion muestra mapa-->
+  <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="mapModalLabel">Seleccionar ubicación</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <p>Haz clic en el mapa para seleccionar un punto.</p>
+                  <div id="map-modal-container"></div>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                  <button type="button" class="btn btn-primary" id="confirm-selection-btn" data-bs-dismiss="modal">Confirmar Selección</button>
+              </div>
+          </div>
+      </div>
+  </div>
+      <!-- fin seccion muestra mapa-->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+ 
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+  <script src="logica.js"></script>
+
+    <!-- mi calculos-->
+
+    <!-- Events Section -->
+    <section id="viajes-realizados" class="events section"> <div class="container section-title" data-aos="fade-up">
+      <h2>Nuestros Viajes Realizados</h2> <p>Demostrando la excelencia y compromiso en cada servicio de flete.</p> </div><div class="container" data-aos="fade-up" data-aos-delay="100">
+
+      <div class="event-filters mb-4">
+          <div class="row justify-content-center g-3">
+              <div class="col-md-4">
+                  <select class="form-select">
+                      <option selected="">Todos los Meses</option>
+                      <option>Enero</option>
+                      <option>Febrero</option>
+                      <option>Marzo</option>
+                      <option>Abril</option>
+                      <option>Mayo</option>
+                      <option>Junio</option>
+                      <option>Julio</option>
+                      <option>Agosto</option>
+                      <option>Septiembre</option>
+                      <option>Octubre</option>
+                      <option>Noviembre</option>
+                      <option>Diciembre</option>
+                  </select>
+              </div>
+              <div class="col-md-4">
+                  <select class="form-select">
+                      <option selected="">Todas las Categorías</option>
+                      <option>Mudanzas Hogar</option>
+                      <option>Transporte Comercial</option>
+                      <option>Cargas Especiales</option>
+                      <option>Fletes Express</option>
+                  </select>
+              </div>
+          </div>
+      </div>
+
+      <div class="row g-4">
+
+          <div class="col-lg-6">
+              <div class="event-card">
+                  <div class="event-date">
+                      <span class="month">JUL</span>
+                      <span class="day">01</span>
+                      <span class="year">2025</span>
+                  </div>
+                  <div class="event-content">
+                      <div class="event-tag academic">Mudanza Hogar</div> <h3>Familia Pérez - Mudanza Completa</h3>
+                      <p>Traslado eficiente de una vivienda de 3 ambientes desde Yerba Buena al centro de San Miguel de Tucumán. Incluyó embalaje de mobiliario y objetos delicados.</p>
+                      <div class="event-meta">
+                          <div class="meta-item">
+                              <i class="bi bi-clock"></i>
+                              <span>09:00 AM</span>
+                          </div>
+                          <div class="meta-item">
+                              <i class="bi bi-geo-alt"></i>
+                              <span>Yerba Buena a S.M. de Tucumán</span>
+                          </div>
+                      </div>
+                      <div class="event-actions">
+                          <a href="#" class="btn-learn-more">Ver Detalles</a>
+                          <a href="https://wa.me/TUNUMERODEWHATSAPP?text=Hola,%20quisiera%20pedir%20un%20presupuesto%20similar%20al%20viaje%20de%20la%20Familia%20Pérez." class="btn-calendar" target="_blank"><i class="bi bi-whatsapp"></i> Contactar</a>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <div class="col-lg-6">
+              <div class="event-card">
+                  <div class="event-date">
+                      <span class="month">JUN</span>
+                      <span class="day">28</span>
+                      <span class="year">2025</span>
+                  </div>
+                  <div class="event-content">
+                      <div class="event-tag sports">Transporte Comercial</div> <h3>Distribuidora Norte - Carga de Pallets</h3>
+                      <p>Flete de 8 pallets con mercadería seca desde el Parque Industrial a un depósito en Alderetes. Cumplimiento estricto de horarios de entrega.</p>
+                      <div class="event-meta">
+                          <div class="meta-item">
+                              <i class="bi bi-clock"></i>
+                              <span>14:30 PM</span>
+                          </div>
+                          <div class="meta-item">
+                              <i class="bi bi-geo-alt"></i>
+                              <span>Parque Ind. a Alderetes</span>
+                          </div>
+                      </div>
+                      <div class="event-actions">
+                          <a href="#" class="btn-learn-more">Ver Detalles</a>
+                          <a href="https://wa.me/TUNUMERODEWHATSAPP?text=Hola,%20necesito%20un%20servicio%20de%20flete%20comercial%20como%20el%20de%20Distribuidora%20Norte." class="btn-calendar" target="_blank"><i class="bi bi-whatsapp"></i> Contactar</a>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <div class="col-lg-6">
+              <div class="event-card">
+                  <div class="event-date">
+                      <span class="month">JUN</span>
+                      <span class="day">20</span>
+                      <span class="year">2025</span>
+                  C</div>
+                  <div class="event-content">
+                      <div class="event-tag arts">Cargas Especiales</div> <h3>Sr. García - Traslado de Piano</h3>
+                      <p>Transporte cuidadoso de un piano de cola desde un domicilio particular en Capital a Tafí Viejo. Incluyó personal especializado y seguro.</p>
+                      <div class="event-meta">
+                          <div class="meta-item">
+                              <i class="bi bi-clock"></i>
+                              <span>11:00 AM</span>
+                          </div>
+                          <div class="meta-item">
+                              <i class="bi bi-geo-alt"></i>
+                              <span>S.M. de Tucumán a Tafí Viejo</span>
+                          </div>
+                      </div>
+                      <div class="event-actions">
+                          <a href="#" class="btn-learn-more">Ver Detalles</a>
+                          <a href="https://wa.me/TUNUMERODEWHATSAPP?text=Hola,%20quisiera%20cotizar%20el%20traslado%20de%20una%20carga%20especial." class="btn-calendar" target="_blank"><i class="bi bi-whatsapp"></i> Contactar</a>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <div class="col-lg-6">
+              <div class="event-card">
+                  <div class="event-date">
+                      <span class="month">JUN</span>
+                      <span class="day">15</span>
+                      <span class="year">2025</span>
+                  </div>
+                  <div class="event-content">
+                      <div class="event-tag community">Fletes Express</div> <h3>Clínica Central - Entrega Urgente</h3>
+                      <p>Servicio express de documentos y equipamiento médico ligero desde una sucursal a la sede principal. Flete coordinado y entregado en 45 minutos.</p>
+                      <div class="event-meta">
+                          <div class="meta-item">
+                              <i class="bi bi-clock"></i>
+                              <span>10:00 AM</span>
+                          </div>
+                          <div class="meta-item">
+                              <i class="bi bi-geo-alt"></i>
+                              <span>S.M. de Tucumán (Interno)</span>
+                          </div>
+                      </div>
+                      <div class="event-actions">
+                          <a href="#" class="btn-learn-more">Ver Detalles</a>
+                          <a href="https://wa.me/TUNUMERODEWHATSAPP?text=Hola,%20necesito%20un%20flete%20express%20en%20Tucumán." class="btn-calendar" target="_blank"><i class="bi bi-whatsapp"></i> Contactar</a>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+      </div>
+
+      <div class="text-center mt-5">
+          <a href="#" class="btn-view-all">Ver Todos los Viajes</a> </div>
+
+  </div>
+
+</section>
+    <!-- /Events Section -->
+
+    <!-- About Section -->
+    <section id="about" class="about section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row mb-5">
+          <div class="col-lg-6 pe-lg-5" data-aos="fade-right" data-aos-delay="200">
+            <h2 class="display-6 fw-bold mb-4">Empowering Minds, <span>Shaping Futures</span></h2>
+            <p class="lead mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
+            <div class="d-flex flex-wrap gap-4 mb-4">
+              <div class="stat-box">
+                <span class="stat-number"><span data-purecounter-start="0" data-purecounter-end="25" data-purecounter-duration="1" class="purecounter"></span>+</span>
+                <span class="stat-label">Years</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-number"><span data-purecounter-start="0" data-purecounter-end="2500" data-purecounter-duration="1" class="purecounter"></span>+</span>
+                <span class="stat-label">Students</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-number"><span data-purecounter-start="0" data-purecounter-end="125" data-purecounter-duration="1" class="purecounter"></span>+</span>
+                <span class="stat-label">Faculty</span>
+              </div>
+            </div>
+            <div class="d-flex align-items-center mt-4 signature-block">
+              <img src="assets/img/misc/signature-1.webp" alt="Principal's Signature" width="120">
+              <div class="ms-3">
+                <p class="mb-0 fw-bold">Dr. Elizabeth Morgan</p>
+                <p class="mb-0 text-muted">Principal</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6" data-aos="fade-left" data-aos-delay="300">
+            <div class="image-stack">
+              <div class="image-stack-item image-stack-item-top" data-aos="zoom-in" data-aos-delay="400">
+                <img src="assets/img/education/campus-4.webp" alt="Campus Life" class="img-fluid rounded-4 shadow-lg">
+              </div>
+              <div class="image-stack-item image-stack-item-bottom" data-aos="zoom-in" data-aos-delay="500">
+                <img src="assets/img/education/students-2.webp" alt="Students" class="img-fluid rounded-4 shadow-lg">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mission-vision-row g-4">
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="value-card h-100">
+              <div class="card-icon">
+                <i class="bi bi-rocket-takeoff"></i>
+              </div>
+              <h3>Our Mission</h3>
+              <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat.</p>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="value-card h-100">
+              <div class="card-icon">
+                <i class="bi bi-eye"></i>
+              </div>
+              <h3>Our Vision</h3>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim.</p>
+            </div>
+          </div>
+          <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="value-card h-100">
+              <div class="card-icon">
+                <i class="bi bi-star"></i>
+              </div>
+              <h3>Our Values</h3>
+              <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing elit.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+    <!-- /About Section -->
+
+    <!-- Featured Programs Section -->
+    <section id="featured-programs" class="featured-programs section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Featured Programs</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+          <ul class="program-filters isotope-filters" data-aos="fade-up" data-aos-delay="100">
+            <li data-filter="*" class="filter-active">All Programs</li>
+            <li data-filter=".filter-bachelor">Bachelor's</li>
+            <li data-filter=".filter-master">Master's</li>
+            <li data-filter=".filter-certificate">Certificates</li>
+          </ul>
+
+          <div class="row g-4 isotope-container">
+            <div class="col-lg-6 isotope-item filter-bachelor" data-aos="zoom-in" data-aos-delay="100">
+              <div class="program-item">
+                <div class="program-badge">Bachelor's Degree</div>
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    <div class="program-image-wrapper">
+                      <img src="assets/img/education/education-1.webp" class="img-fluid" alt="Program">
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="program-content">
+                      <h3>Computer Science</h3>
+                      <div class="program-highlights">
+                        <span><i class="bi bi-clock"></i> 4 Years</span>
+                        <span><i class="bi bi-people-fill"></i> 120 Credits</span>
+                        <span><i class="bi bi-calendar3"></i> Fall &amp; Spring</span>
+                      </div>
+                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
+                      <a href="#" class="program-btn"><span>Learn More</span> <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div><!-- End Program Item -->
+
+            <div class="col-lg-6 isotope-item filter-bachelor" data-aos="zoom-in" data-aos-delay="200">
+              <div class="program-item">
+                <div class="program-badge">Bachelor's Degree</div>
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    <div class="program-image-wrapper">
+                      <img src="assets/img/education/education-3.webp" class="img-fluid" alt="Program">
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="program-content">
+                      <h3>Business Administration</h3>
+                      <div class="program-highlights">
+                        <span><i class="bi bi-clock"></i> 3 Years</span>
+                        <span><i class="bi bi-people-fill"></i> 90 Credits</span>
+                        <span><i class="bi bi-calendar3"></i> Fall Only</span>
+                      </div>
+                      <p>Nullam sed augue a turpis bibendum cursus. Suspendisse potenti. Praesent mi diam, feugiat a tincidunt at.</p>
+                      <a href="#" class="program-btn"><span>Learn More</span> <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div><!-- End Program Item -->
+
+            <div class="col-lg-6 isotope-item filter-bachelor" data-aos="zoom-in" data-aos-delay="300">
+              <div class="program-item">
+                <div class="program-badge">Bachelor's Degree</div>
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    <div class="program-image-wrapper">
+                      <img src="assets/img/education/education-5.webp" class="img-fluid" alt="Program">
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="program-content">
+                      <h3>Medical Sciences</h3>
+                      <div class="program-highlights">
+                        <span><i class="bi bi-clock"></i> 5 Years</span>
+                        <span><i class="bi bi-people-fill"></i> 150 Credits</span>
+                        <span><i class="bi bi-calendar3"></i> Fall Only</span>
+                      </div>
+                      <p>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
+                      <a href="#" class="program-btn"><span>Learn More</span> <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div><!-- End Program Item -->
+
+            <div class="col-lg-6 isotope-item filter-master" data-aos="zoom-in" data-aos-delay="100">
+              <div class="program-item">
+                <div class="program-badge">Master's Degree</div>
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    <div class="program-image-wrapper">
+                      <img src="assets/img/education/education-7.webp" class="img-fluid" alt="Program">
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="program-content">
+                      <h3>Environmental Studies</h3>
+                      <div class="program-highlights">
+                        <span><i class="bi bi-clock"></i> 2 Years</span>
+                        <span><i class="bi bi-people-fill"></i> 60 Credits</span>
+                        <span><i class="bi bi-calendar3"></i> Spring Only</span>
+                      </div>
+                      <p>Aenean imperdiet, erat vel consequat mollis, nunc risus aliquam nunc, eget condimentum urna dui et metus.</p>
+                      <a href="#" class="program-btn"><span>Learn More</span> <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div><!-- End Program Item -->
+
+            <div class="col-lg-6 isotope-item filter-master" data-aos="zoom-in" data-aos-delay="200">
+              <div class="program-item">
+                <div class="program-badge">Master's Degree</div>
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    <div class="program-image-wrapper">
+                      <img src="assets/img/education/education-9.webp" class="img-fluid" alt="Program">
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="program-content">
+                      <h3>Mechanical Engineering</h3>
+                      <div class="program-highlights">
+                        <span><i class="bi bi-clock"></i> 2 Years</span>
+                        <span><i class="bi bi-people-fill"></i> 64 Credits</span>
+                        <span><i class="bi bi-calendar3"></i> Fall &amp; Spring</span>
+                      </div>
+                      <p>Praesent tincidunt, massa et porttitor imperdiet, lorem ex ultricies ipsum, a tempus metus eros non tortor.</p>
+                      <a href="#" class="program-btn"><span>Learn More</span> <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div><!-- End Program Item -->
+
+            <div class="col-lg-6 isotope-item filter-certificate" data-aos="zoom-in" data-aos-delay="100">
+              <div class="program-item">
+                <div class="program-badge">Certificate</div>
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    <div class="program-image-wrapper">
+                      <img src="assets/img/education/education-2.webp" class="img-fluid" alt="Program">
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="program-content">
+                      <h3>Data Science</h3>
+                      <div class="program-highlights">
+                        <span><i class="bi bi-clock"></i> 6 Months</span>
+                        <span><i class="bi bi-people-fill"></i> 24 Credits</span>
+                        <span><i class="bi bi-calendar3"></i> Year-round</span>
+                      </div>
+                      <p>Mauris sed erat in mi vestibulum commodo. Donec a purus at justo facilisis imperdiet tnteger pell</p>
+                      <a href="#" class="program-btn"><span>Learn More</span> <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div><!-- End Program Item -->
+
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /Featured Programs Section -->
+
+    <!-- Students Life Block Section -->
+    <section id="students-life-block" class="students-life-block section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Students Life</h2>
+        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row align-items-center gy-4">
+          <div class="col-lg-6" data-aos="fade-right" data-aos-delay="200">
+            <div class="students-life-img position-relative">
+              <img src="assets/img/education/education-square-11.webp" class="img-fluid rounded-4 shadow-sm" alt="Students Life">
+              <div class="img-overlay">
+                <h3>Discover Campus Life</h3>
+                <a href="students-life.html" class="explore-btn">Explore More <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6" data-aos="fade-left" data-aos-delay="300">
+            <div class="students-life-content">
+
+              <div class="row g-4 mb-4">
+                <div class="col-md-6" data-aos="zoom-in" data-aos-delay="200">
+                  <div class="student-activity-item">
+                    <div class="icon-box">
+                      <i class="bi bi-people"></i>
+                    </div>
+                    <h4>Student Clubs</h4>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit ut aliquam purus.</p>
+                  </div>
+                </div>
+
+                <div class="col-md-6" data-aos="zoom-in" data-aos-delay="300">
+                  <div class="student-activity-item">
+                    <div class="icon-box">
+                      <i class="bi bi-trophy"></i>
+                    </div>
+                    <h4>Sports Events</h4>
+                    <p>Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                  </div>
+                </div>
+
+                <div class="col-md-6" data-aos="zoom-in" data-aos-delay="400">
+                  <div class="student-activity-item">
+                    <div class="icon-box">
+                      <i class="bi bi-music-note-beamed"></i>
+                    </div>
+                    <h4>Arts &amp; Culture</h4>
+                    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.</p>
+                  </div>
+                </div>
+
+                <div class="col-md-6" data-aos="zoom-in" data-aos-delay="500">
+                  <div class="student-activity-item">
+                    <div class="icon-box">
+                      <i class="bi bi-globe-americas"></i>
+                    </div>
+                    <h4>Global Experiences</h4>
+                    <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="students-life-cta" data-aos="fade-up" data-aos-delay="600">
+                <a href="students-life.html" class="btn btn-primary">View All Student Activities</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /Students Life Block Section -->
+
+
+    
+
+  </main>
+
+  <footer id="footer" class="footer position-relative dark-background">
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">Fletes-YA</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+
+        Designed by <a href="https://wa.me/5493813440889?text=Hola,%20quisiera%20hacerte%20una%20consulta%20sobre%20tus%20servicios%20de%20PAGINAS%20WEBS.">Program.JK</a>
+      </div>
+    </div>
+
+  </footer>
+
+  <!--boton wp-->
+  <a href="https://wa.me/5493813440889?text=Hola,%20quisiera%20hacerte%20una%20consulta%20sobre%20tus%20servicios%20de%20flete." 
+   id="whatsapp-btn" 
+   class="whatsapp-btn d-flex align-items-center justify-content-center" 
+   target="_blank" 
+   aria-label="Contactar por WhatsApp">
+   <i class="bi bi-whatsapp"></i>
+</a>
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+  <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+
+  <!--API mapa -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+
+  <!-- Main JS File -->
+  <script src="assets/js/main.js"></script>
+  <!-- Mi logica.js -->
+  <script src="assets/js/logica.js"></script>
+
+
+</body>
+
+</html>

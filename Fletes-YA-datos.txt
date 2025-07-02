@@ -1,0 +1,18 @@
+*home donde se muestre 
+--ingrese Punto A
+--iNGRESE PUNTO B
+	
+muestra mapa del trayecto
+-cargar datos de formulario importante
+-boton calcula
+-boton flotante WP
+
+*seciones desplegables con opciones
+-registrarce
+-viajes realizados
+-viajes reservados(con turnos)
+-informe de viajes
+
+
+ 
+
