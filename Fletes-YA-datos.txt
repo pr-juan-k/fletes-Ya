@@ -23,6 +23,6 @@ muestra mapa del trayecto
 
 --fotos y descripcion hablando de a empresa
 
-
+assets\img\myAddfFT\descriptiva.jpg
  
 
