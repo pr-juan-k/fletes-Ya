@@ -5,12 +5,244 @@
 /*--------------------------------------------------------------
 INICIO my stile
 --------------------------------------------------------------*/
+/* --- Sección "Sobre Nosotros" --- */
+.about-us-block.section {
+  background-color: #f8f9fa; /* Fondo ligeramente gris para la sección */
+  padding: 80px 0; /* Buen espaciado vertical */
+}
+
+/* Título de la Sección */
+.about-us-block .section-title h2 {
+  font-size: 2.8rem; /* Tamaño de fuente más grande para el título */
+  color: #333;
+}
+
+.about-us-block .section-title p {
+  font-size: 1.15rem; /* Tamaño de fuente para el subtítulo */
+  color: #6c757d;
+}
+
+/* Imagen Descriptiva */
+.about-us-img {
+  position: relative;
+  border-radius: 0.75rem; /* Bordes redondeados */
+  overflow: hidden; /* Asegura que la imagen no se desborde del contenedor con bordes redondeados */
+}
+
+.about-us-img img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
+}
+
+.img-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Overlay semitransparente oscuro */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  opacity: 0; /* Inicialmente oculto */
+  transition: opacity 0.3s ease; /* Transición suave */
+  border-radius: 0.75rem; /* Bordes redondeados para el overlay */
+}
+
+.about-us-img:hover .img-overlay {
+  opacity: 1; /* Se vuelve visible al pasar el mouse */
+}
+
+.img-overlay h3 {
+  color: #fff;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.img-overlay p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+}
+
+/* Contenido de texto "Sobre Nosotros" */
+.about-us-content h3 {
+  font-size: 2.2rem;
+  color: #212529;
+}
+
+.about-us-content .lead {
+  font-size: 1.15rem;
+  line-height: 1.6;
+}
+
+/* Ítems de Características */
+.feature-item {
+  padding: 20px;
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.07); /* Sombra suave */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%; /* Asegura que todos los ítems tengan la misma altura */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centra el contenido en el eje transversal */
+  text-align: center; /* Centra el texto */
+}
+
+@media (min-width: 768px) {
+  .feature-item {
+      align-items: flex-start; /* Alinea a la izquierda en pantallas md y mayores */
+      text-align: left; /* Alinea el texto a la izquierda en pantallas md y mayores */
+  }
+  .feature-item .icon-box.mx-auto {
+      margin-left: 0 !important; /* Anula mx-auto en md */
+      margin-right: 15px !important; /* Añade margen derecho al icono */
+  }
+  .about-us-content .ps-lg-4 {
+      padding-left: 1.5rem !important; /* Espacio a la izquierda del contenido en pantallas grandes */
+  }
+}
+
+
+.feature-item:hover {
+  transform: translateY(-5px); /* Pequeño levantamiento al pasar el mouse */
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12); /* Sombra más intensa */
+}
+
+.feature-item .icon-box {
+  width: 60px;
+  height: 60px;
+  background: var(--bs-primary-rgb); /* Color de fondo del icono, usa el color principal */
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.8rem;
+  margin-bottom: 15px; /* Espacio debajo del icono */
+}
+
+.feature-item .icon-box i {
+  color: #fff; /* Asegura que el icono sea blanco */
+}
+
+.feature-item h4 {
+  font-size: 1.25rem;
+  color: #343a40;
+  margin-bottom: 0.5rem;
+}
+
+.feature-item p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #6c757d;
+}
+
+/* Botón CTA al final de la sección */
+.about-us-cta .btn {
+  padding: 12px 30px;
+  font-size: 1.1rem;
+  border-radius: 50px;
+}
+
+
+/* Ajustes para la sección about */
+.about.section {
+  background-color: #f8f9fa; /* Un fondo ligeramente gris para que se destaque */
+  padding: 60px 0; /* Espaciado superior e inferior para la sección */
+}
+
+/* Estilos para el contenedor principal de las tarjetas */
+#reserved-trips-container {
+  /* Aquí no se necesita mucho CSS, Bootstrap se encarga del grid */
+}
+
+/* Estilos de las tarjetas de viaje */
+.trip-card {
+  /* Eliminamos el border por defecto y usamos border-0 de Bootstrap */
+  border: none; 
+  border-radius: 0.75rem; /* Bordes más redondeados */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Animación más suave */
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+  overflow: hidden; /* Asegura que cualquier contenido que se desborde esté oculto */
+}
+
+.trip-card:hover {
+  transform: translateY(-8px); /* Pequeño levantamiento al pasar el mouse */
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.15); /* Sombra más intensa al pasar el mouse */
+}
+
+.trip-card .card-body {
+  padding: 1.5rem; /* Aumenta el relleno interno */
+}
+
+.trip-card .card-title {
+  font-size: 1.3rem; /* Tamaño de fuente para el título del cliente */
+  margin-bottom: 1rem; /* Espacio inferior */
+  color: var(--bs-primary); /* Usa la variable de color principal de Bootstrap */
+}
+
+.trip-card .card-body ul {
+  margin-bottom: 0; /* Elimina margen inferior por defecto de ul */
+}
+
+.trip-card .card-body ul li {
+  margin-bottom: 0.5rem; /* Espaciado entre cada ítem de la lista */
+  display: flex; /* Para alinear icono y texto */
+  align-items: flex-start; /* Alinea los ítems de la lista en la parte superior si el texto es largo */
+}
+
+.trip-card .card-body ul li:last-child {
+  margin-bottom: 0; /* Elimina el margen del último ítem */
+}
+
+
+.trip-card .card-body i {
+  margin-right: 0.75rem; /* Más espacio entre el icono y el texto */
+  font-size: 1.1em; /* Un poco más grandes los iconos */
+  color: var(--bs-info); /* Un color de info para los iconos, usa el que prefieras */
+  flex-shrink: 0; /* Evita que el icono se encoja */
+}
+
+.trip-card .card-text strong {
+  font-weight: 600; /* Hace el texto fuerte un poco más grueso */
+  color: #343a40; /* Color oscuro para el texto de los detalles */
+}
+
+.trip-card .card-footer {
+  background-color: #f0f2f5; /* Un fondo ligeramente más claro para el footer */
+  border-top: 1px solid rgba(0,0,0,.08); /* Borde superior más definido */
+  font-size: 0.8em; /* Fuente más pequeña para la hora */
+  color: #6c757d; /* Color gris para el texto */
+  padding: 0.75rem 1.5rem; /* Relleno ajustado */
+}
+
+/* Ajustes para el título principal de la sección */
+.about .display-5 {
+  font-size: 2.5rem; /* Ajusta el tamaño del título principal */
+}
+
+/* Si quieres que el subtítulo "Descubre..." sea un poco más pequeño en pantallas grandes */
+.about .lead {
+  font-size: 1.15rem;
+}
+
+
 /* --- Estilos para los Íconos en el Menú de Navegación --- */
 
 /* Ajusta todos los íconos (clase bi) dentro de los enlaces del navmenu */
 #navmenu ul li a .bi {
   /* Margen a la derecha para separar el ícono del texto */
   margin-right: 8px; 
+  transform: none !important; /* Asegura que no haya ninguna transformación */
+    
+    transform: none !important;
   
   /* Ajusta el tamaño del ícono si es necesario */
   /* Por defecto, los íconos de Bootstrap suelen heredar el font-size del texto.
@@ -862,10 +1094,10 @@ section,
 
 .hero .hero-container {
   position: relative;
-  min-height: 90vh; /* Asegura que el contenedor tenga una altura mínima */
+  min-height: 92vh; /* Asegura que el contenedor tenga una altura mínima */
   display: flex;
   align-items: center;
-  padding: 180px 0 80px 0;
+  padding: 100px 0 80px 0;
 }
 
 /* ESTILO CLAVE PARA LA IMAGEN DE FONDO */
