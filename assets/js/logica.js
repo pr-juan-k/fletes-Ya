@@ -235,24 +235,36 @@ function resetCalculation() {
 // --- Event Listeners ---
 
 // Se ejecuta CADA VEZ que el modal del mapa está a punto de mostrarse
+// --- Evento 'show.bs.modal': Se dispara JUSTO ANTES de que el modal empiece a mostrarse. ---
 mapModalElement.addEventListener('show.bs.modal', function (event) {
     const button = event.relatedTarget;
     currentPointType = button.getAttribute('data-point-type');
     
     document.getElementById('mapModalLabel').innerText = `Seleccionar Punto ${currentPointType}`;
-    
     temporarySelection = { lat: null, lng: null, address: null };
 
+    // Si el mapa aún no ha sido inicializado, lo hacemos aquí.
     if (!mapModal) {
-        setTimeout(initializeMapModal, 200);
-    } else {
-        if (temporaryMarker) {
-            temporaryMarker.remove();
-            temporaryMarker = null;
-        }
-        mapModal.setView([-26.83, -65.22], 13);
+        initializeMapModal();
+    }
+    // Centramos el mapa y limpiamos marcadores temporales cada vez que se abre.
+    mapModal.setView([-26.83, -65.22], 13);
+    if (temporaryMarker) {
+        temporaryMarker.remove();
+        temporaryMarker = null;
+    }
+});
+
+// --- Evento 'shown.bs.modal': Se dispara DESPUÉS de que el modal ha sido COMPLETAMENTE mostrado. ---
+// ESTE ES EL EVENTO CLAVE para llamar a invalidateSize()
+mapModalElement.addEventListener('shown.bs.modal', function() {
+    // Aseguramos que el mapa se redimensione correctamente DESPUÉS de que el modal está completamente visible.
+    if (mapModal) { // Verificamos que el mapa exista antes de intentar invalidar el tamaño
         mapModal.invalidateSize();
     }
+});
+document.addEventListener('DOMContentLoaded', function() {
+    initializeRouteMap();
 });
 
 // Listener para el botón de confirmar selección dentro del modal
