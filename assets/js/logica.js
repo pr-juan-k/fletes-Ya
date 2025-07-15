@@ -1,74 +1,66 @@
 // --- Constantes y Variables Globales ---
-const COSTO_POR_KM = 1000; // Define el costo por kilómetro en pesos argentinos
 
-let mapModal; // Mapa para la selección de puntos en el modal
-let mapRoute; // Mapa para mostrar la ruta calculada
-let temporaryMarker; // Marcador temporal en el modal para el punto A o B
-let currentPointType; // Almacena si estamos seleccionando el punto 'A' o 'B'
-let routingControl = null; // Control de ruta de Leaflet Routing Machine
+// --- CONSTANTES DE CÁLCULO --- ⚙️
+const TARIFA_MINIMA_VIAJE_CORTO = 10000;
+const FACTOR_CALCULO_KM = 2.2;
+const PRECIO_BASE_KM = 1300;
+const DESCUENTO_LARGA_DISTANCIA = 0.10; // 10%
 
-// Objeto para almacenar las coordenadas y direcciones confirmadas de los puntos A y B
+const COSTO_AYUDA = 5000;
+const COSTO_EXTRA_ASCENSOR_POR_CARGA = 500;
+const COSTO_EXTRA_ESCALERAS_POR_CARGA = 2000;
+const COSTO_POR_CARGA_ADICIONAL = 1000; // <-- NUEVO: Costo de $1000 por cada carga
+
+let mapModal, mapRoute, temporaryMarker, currentPointType;
+let routingControl = null;
+
 const confirmedPoints = {
     A: { lat: null, lng: null, address: null, marker: null },
     B: { lat: null, lng: null, address: null, marker: null }
 };
 
-// Objeto para almacenar la selección temporal dentro del modal
 let temporarySelection = { lat: null, lng: null, address: null };
 
 // --- Referencias a Elementos del DOM ---
 const mapModalElement = document.getElementById('mapModal');
-const calculateButton = document.getElementById('calculate-distance-btn');
+const calculateButton = document.getElementById('calculate-cost-btn');
 const resultsSection = document.getElementById('results-section');
-const routeMapContainer = document.getElementById('route-map-container');
+const routeMapContainer = document.getElementById('route-map'); 
 const distanceOutput = document.getElementById('distance-output');
 const costOutput = document.getElementById('cost-output');
 const errorMessageDiv = document.querySelector('.error-message');
 const loadingDiv = document.querySelector('.loading');
-const resetButton = document.getElementById('reset-button'); // Nuevo botón de reiniciar
-
-// Botones y campos de entrada para geocodificación
+const actionButtonsContainer = document.getElementById('action-buttons-container');
 const addressAInput = document.getElementById('addressA-input');
 const addressBInput = document.getElementById('addressB-input');
 const geocodeAButton = document.getElementById('geocode-A-btn');
 const geocodeBButton = document.getElementById('geocode-B-btn');
+const quotationFormContainer = document.getElementById('quotation-form-container');
 
 // --- Funciones Principales ---
 
-/**
- * Inicializa el mapa dentro del modal la primera vez que se abre.
- * Se centra en San Miguel de Tucumán.
- */
 function initializeMapModal() {
-    const tucumanCoordinates = [-26.83, -65.22]; // Coordenadas de San Miguel de Tucumán
+    const tucumanCoordinates = [-26.83, -65.22];
     mapModal = L.map('map-modal-container').setView(tucumanCoordinates, 13);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(mapModal);
 
-    // Añadir el listener para clics en el mapa
     mapModal.on('click', handleMapModalClick);
 }
 
-/**
- * Maneja el clic en el mapa del modal para seleccionar un punto.
- * Añade o mueve un marcador temporal y obtiene la dirección inversa.
- * @param {Object} event - Objeto de evento de Leaflet.
- */
 function handleMapModalClick(event) {
     const clickedLatLng = event.latlng;
     temporarySelection.lat = clickedLatLng.lat;
     temporarySelection.lng = clickedLatLng.lng;
 
-    // Si no hay marcador, lo crea. Si ya existe, lo mueve.
     if (!temporaryMarker) {
         temporaryMarker = L.marker(clickedLatLng, { draggable: true }).addTo(mapModal);
     } else {
         temporaryMarker.setLatLng(clickedLatLng);
     }
     
-    // Obtenemos la dirección usando la API de Nominatim (geocodificación inversa)
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${clickedLatLng.lat}&lon=${clickedLatLng.lng}`)
         .then(response => response.json())
         .then(data => {
@@ -80,32 +72,20 @@ function handleMapModalClick(event) {
         });
 }
 
-/**
- * Confirma la selección del punto (A o B) del modal y actualiza la UI.
- */
 function confirmPointSelection() {
     if (temporarySelection.lat && temporarySelection.lng) {
-        // Copia la selección temporal al punto confirmado (A o B)
         confirmedPoints[currentPointType] = { ...temporarySelection };
 
-        // Actualiza el campo de entrada de texto con la dirección para el usuario
         document.getElementById(`address${currentPointType}-input`).value = confirmedPoints[currentPointType].address;
-        // Almacena las coordenadas en los hidden inputs
         document.getElementById(`lat${currentPointType}`).value = confirmedPoints[currentPointType].lat;
         document.getElementById(`lng${currentPointType}`).value = confirmedPoints[currentPointType].lng;
-        // También guarda la dirección para referencia interna si es necesario
         document.getElementById(`display-address${currentPointType}`).value = confirmedPoints[currentPointType].address;
     }
 }
 
-/**
- * Realiza la geocodificación de una dirección.
- * @param {string} address - La dirección a buscar.
- * @returns {Promise<Object|null>} - Una promesa que resuelve con un objeto {lat, lng, address} o null si falla.
- */
 async function geocodeAddress(address) {
     try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&countrycodes=ar`);
         const data = await response.json();
         if (data && data.length > 0) {
             const firstResult = data[0];
@@ -121,10 +101,6 @@ async function geocodeAddress(address) {
     return null;
 }
 
-/**
- * Maneja el evento de click del botón de geocodificación.
- * @param {string} pointType - 'A' o 'B' para indicar qué punto se está geocodificando.
- */
 async function handleGeocodeButtonClick(pointType) {
     const inputElement = document.getElementById(`address${pointType}-input`);
     const address = inputElement.value.trim();
@@ -147,226 +123,285 @@ async function handleGeocodeButtonClick(pointType) {
         document.getElementById(`lat${pointType}`).value = result.lat;
         document.getElementById(`lng${pointType}`).value = result.lng;
         document.getElementById(`display-address${pointType}`).value = result.address;
-        console.log(`Punto ${pointType} geocodificado:`, result);
     } else {
-        showError(`No se pudo encontrar la dirección para el Punto ${pointType}. Intenta ser más específico.`);
+        showError(`No se pudo encontrar la dirección para el Punto ${pointType}.`);
     }
 }
 
-/**
- * Inicializa el mapa para mostrar la ruta calculada.
- * Se crea la primera vez que se calcula una ruta.
- */
 function initializeRouteMap() {
-    mapRoute = L.map('route-map').setView([-26.83, -65.22], 13); // Centra en Tucumán
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(mapRoute);
+    if (!mapRoute) {
+        mapRoute = L.map(routeMapContainer.id).setView([-26.83, -65.22], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapRoute);
+    }
 }
 
-/**
- * Muestra un mensaje de error.
- * @param {string} message - El mensaje de error a mostrar.
- */
 function showError(message) {
     errorMessageDiv.innerText = message;
     errorMessageDiv.style.display = 'block';
 }
 
-/**
- * Oculta todos los mensajes (loading y error).
- */
 function hideMessages() {
     errorMessageDiv.style.display = 'none';
     loadingDiv.style.display = 'none';
 }
 
+function validateForm() {
+    const latA = document.getElementById('latA').value;
+    const latB = document.getElementById('latB').value;
+    const nombre = document.getElementById('nombrePersona').value;
+    const cargas = document.getElementById('cantidadCargas').value;
+
+    if (!nombre.trim()) {
+        showError('Por favor, ingresa tu nombre completo.');
+        return false;
+    }
+    if (!latA || !latB) {
+        showError('Debes seleccionar un punto de origen y uno de destino.');
+        return false;
+    }
+    if (!cargas || parseInt(cargas) < 1) {
+        showError('La cantidad de cargas debe ser al menos 1.');
+        return false;
+    }
+    return true;
+}
+
 /**
- * Reinicia la cotización, limpiando los campos y ocultando los resultados.
+ * NUEVO: Función para reiniciar la cotización y volver al formulario.
  */
-function resetCalculation() {
-    // Limpiar campos de entrada
-    addressAInput.value = '';
-    addressBInput.value = '';
-
-    // Resetear puntos confirmados
-    confirmedPoints.A = { lat: null, lng: null, address: null, marker: null };
-    confirmedPoints.B = { lat: null, lng: null, address: null, marker: null };
-
-    // Limpiar hidden inputs
-    document.getElementById('latA').value = '';
-    document.getElementById('lngA').value = '';
-    document.getElementById('display-addressA').value = '';
-    document.getElementById('latB').value = '';
-    document.getElementById('lngB').value = '';
-    document.getElementById('display-addressB').value = '';
-
-    // Ocultar resultados y mapa de ruta
+function resetQuote() {
     resultsSection.style.display = 'none';
-    routeMapContainer.style.display = 'none';
-    hideMessages();
-
-    // Eliminar la ruta del mapa de resultados si existe
-    if (routingControl) {
-        if (mapRoute) { // Asegurarse de que mapRoute existe antes de remover el control
-            mapRoute.removeControl(routingControl);
-        }
+    quotationFormContainer.style.display = 'block';
+    if (routingControl && mapRoute) {
+        mapRoute.removeControl(routingControl);
         routingControl = null;
-    }
-
-    // Eliminar marcadores del mapa de ruta si existen
-    if (mapRoute) {
-        if (confirmedPoints.A.marker) {
-            mapRoute.removeLayer(confirmedPoints.A.marker);
-            confirmedPoints.A.marker = null;
-        }
-        if (confirmedPoints.B.marker) {
-            mapRoute.removeLayer(confirmedPoints.B.marker);
-            confirmedPoints.B.marker = null;
-        }
-    }
-
-    // Centrar el mapa de ruta si ya está inicializado
-    if (mapRoute) {
-        mapRoute.setView([-26.83, -65.22], 13); // Centra en Tucumán
     }
 }
 
 // --- Event Listeners ---
 
-// Se ejecuta CADA VEZ que el modal del mapa está a punto de mostrarse
-// --- Evento 'show.bs.modal': Se dispara JUSTO ANTES de que el modal empiece a mostrarse. ---
-mapModalElement.addEventListener('show.bs.modal', function (event) {
-    const button = event.relatedTarget;
-    currentPointType = button.getAttribute('data-point-type');
-    
-    document.getElementById('mapModalLabel').innerText = `Seleccionar Punto ${currentPointType}`;
-    temporarySelection = { lat: null, lng: null, address: null };
-
-    // Si el mapa aún no ha sido inicializado, lo hacemos aquí.
-    if (!mapModal) {
-        initializeMapModal();
-    }
-    // Centramos el mapa y limpiamos marcadores temporales cada vez que se abre.
-    mapModal.setView([-26.83, -65.22], 13);
-    if (temporaryMarker) {
-        temporaryMarker.remove();
-        temporaryMarker = null;
-    }
-});
-
-// --- Evento 'shown.bs.modal': Se dispara DESPUÉS de que el modal ha sido COMPLETAMENTE mostrado. ---
-// ESTE ES EL EVENTO CLAVE para llamar a invalidateSize()
-mapModalElement.addEventListener('shown.bs.modal', function() {
-    // Aseguramos que el mapa se redimensione correctamente DESPUÉS de que el modal está completamente visible.
-    if (mapModal) { // Verificamos que el mapa exista antes de intentar invalidar el tamaño
-        mapModal.invalidateSize();
-    }
-});
 document.addEventListener('DOMContentLoaded', function() {
+    
     initializeRouteMap();
-});
 
-// Listener para el botón de confirmar selección dentro del modal
-document.getElementById('confirm-selection-btn').addEventListener('click', confirmPointSelection);
+    mapModalElement.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        currentPointType = button.getAttribute('data-point-type');
+        
+        document.getElementById('mapModalLabel').innerText = `Seleccionar Punto ${currentPointType}`;
+        temporarySelection = { lat: null, lng: null, address: null };
 
-// Listeners para los botones de geocodificación
-geocodeAButton.addEventListener('click', () => handleGeocodeButtonClick('A'));
-geocodeBButton.addEventListener('click', () => handleGeocodeButtonClick('B'));
-
-// Listener para el nuevo botón de "Reiniciar Cotización"
-resetButton.addEventListener('click', resetCalculation);
-
-// Listener para el botón principal de "Calcular Distancia y Costo"
-calculateButton.addEventListener('click', function() {
-    hideMessages();
-    resultsSection.style.display = 'none';
-    routeMapContainer.style.display = 'none';
-    
-    if (!confirmedPoints.A.lat || !confirmedPoints.B.lat) {
-        showError('Error: Debes seleccionar ambos puntos (A y B) usando el mapa o ingresando direcciones.');
-        return;
-    }
-
-    loadingDiv.innerText = 'Calculando ruta...';
-    loadingDiv.style.display = 'block';
-
-    // Si ya existe una ruta calculada en el mapa de resultados, la eliminamos antes de calcular la nueva
-    if (routingControl) {
-        mapRoute.removeControl(routingControl);
-        routingControl = null;
-    }
-    // Si el mapa de ruta no existe, lo inicializa
-    if (!mapRoute) {
-        initializeRouteMap();
-    } else {
-        // Eliminar marcadores anteriores del mapa de ruta
-        if (confirmedPoints.A.marker) {
-            mapRoute.removeLayer(confirmedPoints.A.marker);
-            confirmedPoints.A.marker = null;
+        if (!mapModal) {
+            initializeMapModal();
         }
-        if (confirmedPoints.B.marker) {
-            mapRoute.removeLayer(confirmedPoints.B.marker);
-            confirmedPoints.B.marker = null;
+        mapModal.setView([-26.83, -65.22], 13);
+        if (temporaryMarker) {
+            temporaryMarker.remove();
+            temporaryMarker = null;
         }
-    }
-    
-    routingControl = L.Routing.control({
-        waypoints: [
-            L.latLng(confirmedPoints.A.lat, confirmedPoints.A.lng),
-            L.latLng(confirmedPoints.B.lat, confirmedPoints.B.lng)
-        ],
-        router: L.Routing.osrmv1({
-            serviceUrl: `https://router.project-osrm.org/route/v1`
-        }),
-        routeWhileDragging: false,
-        addWaypoints: false,
-        show: false,
-        createMarker: function(i, waypoint, n) {
-            let marker = L.marker(waypoint.latLng, {
-                draggable: false,
-                icon: L.icon({
-                    iconUrl: i === 0 ? 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png' : 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-                    iconSize: [25, 41],
-                    iconAnchor: [12, 41],
-                    popupAnchor: [1, -34],
-                    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                    shadowSize: [41, 41]
-                })
-            });
-            if (i === 0) confirmedPoints.A.marker = marker;
-            else confirmedPoints.B.marker = marker;
-            return marker;
+    });
+
+    mapModalElement.addEventListener('shown.bs.modal', function() {
+        if (mapModal) {
+            mapModal.invalidateSize();
         }
-    }).addTo(mapRoute);
+    });
 
-    routingControl.on('routesfound', function(e) {
-        loadingDiv.style.display = 'none';
-        const routes = e.routes;
-        const summary = routes[0].summary;
+    document.getElementById('confirm-selection-btn').addEventListener('click', confirmPointSelection);
+    geocodeAButton.addEventListener('click', () => handleGeocodeButtonClick('A'));
+    geocodeBButton.addEventListener('click', () => handleGeocodeButtonClick('B'));
 
-        const distanceKm = summary.totalDistance / 1000;
-        const totalCost = distanceKm * COSTO_POR_KM;
+    calculateButton.addEventListener('click', function() {
+        hideMessages();
+        
+        if (!validateForm()) return;
 
-        const formatter = new Intl.NumberFormat('es-AR', {
-            style: 'currency',
-            currency: 'ARS',
-            minimumFractionDigits: 2,
+        loadingDiv.innerText = 'Calculando ruta...';
+        loadingDiv.style.display = 'block';
+
+        if (routingControl && mapRoute) {
+            mapRoute.removeControl(routingControl);
+            routingControl = null;
+        }
+
+        routingControl = L.Routing.control({
+            waypoints: [
+                L.latLng(confirmedPoints.A.lat, confirmedPoints.A.lng),
+                L.latLng(confirmedPoints.B.lat, confirmedPoints.B.lng)
+            ],
+            router: L.Routing.osrmv1({ serviceUrl: `https://router.project-osrm.org/route/v1` }),
+            routeWhileDragging: false,
+            addWaypoints: false,
+            show: false,
+            createMarker: function(i, waypoint, n) {
+                const markerLabel = i === 0 ? 'Punto A (Origen)' : 'Punto B (Destino)';
+                return L.marker(waypoint.latLng, {
+                    draggable: false,
+                    icon: L.icon({
+                        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                        shadowSize: [41, 41]
+                    })
+                }).bindPopup(`<b>${markerLabel}</b>`);
+            }
+        }).addTo(mapRoute);
+
+        routingControl.on('routesfound', function(e) {
+            loadingDiv.style.display = 'none';
+            const summary = e.routes[0].summary;
+            const distanceKm = summary.totalDistance / 1000;
+            
+            // Mostrar resultados y mapa
+            quotationFormContainer.style.display = 'none';
+            resultsSection.style.display = 'block';
+            mapRoute.fitBounds(e.routes[0].coordinates);
+            mapRoute.invalidateSize();
+            
+            // --- NUEVA LÓGICA: bifurcación para viajes largos ---
+            if (distanceKm > 15) {
+                // Caso 1: Viaje especial de más de 15 km
+                distanceOutput.innerText = `${distanceKm.toFixed(2)} km`;
+                costOutput.innerHTML = `<p class="lead text-center fw-bold text-warning">Viaje especial con más de 15 kilómetros, ¡escribinos!</p>`;
+                
+                const specialMessage = "Hola, quisiera cotizar un viaje especial.";
+                const whatsappUrl = `https://api.whatsapp.com/send?phone=5493813440889&text=${encodeURIComponent(specialMessage)}`;
+
+                actionButtonsContainer.innerHTML = `
+                    <a href="${whatsappUrl}" target="_blank" class="btn btn-success btn-lg mb-2 w-100">Contactar por Viaje Especial</a>
+                    <button type="button" id="reset-trip-btn" class="btn btn-secondary btn-lg w-100">Reiniciar Viaje</button>
+                `;
+                document.getElementById('reset-trip-btn').addEventListener('click', resetQuote);
+
+            } else {
+                // Caso 2: Viaje normal (menos de 15 km)
+                let costoViaje = 0;
+                if (distanceKm < 2) {
+                    costoViaje = TARIFA_MINIMA_VIAJE_CORTO;
+                } else if (distanceKm <= 8) {
+                    costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM;
+                } else {
+                    let costoSinDescuento = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM;
+                    costoViaje = costoSinDescuento * (1 - DESCUENTO_LARGA_DISTANCIA);
+                }
+
+                let costosAdicionales = 0;
+                const cantidadCargas = parseInt(document.getElementById('cantidadCargas').value) || 1;
+                
+                // NUEVO: Se suma el costo por cada carga
+                costosAdicionales += cantidadCargas * COSTO_POR_CARGA_ADICIONAL;
+
+                if (document.getElementById('ayudaCargarSi').checked) costosAdicionales += COSTO_AYUDA;
+                if (document.getElementById('ayudaDescargarSi').checked) costosAdicionales += COSTO_AYUDA;
+                if (document.getElementById('ascensorSi').checked) costosAdicionales += (cantidadCargas * COSTO_EXTRA_ASCENSOR_POR_CARGA);
+                if (document.getElementById('escalerasSi').checked) costosAdicionales += (cantidadCargas * COSTO_EXTRA_ESCALERAS_POR_CARGA);
+
+                const totalCost = costoViaje + costosAdicionales;
+
+                const formatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' });
+                distanceOutput.innerText = `${distanceKm.toFixed(2)} km`;
+                costOutput.innerText = formatter.format(totalCost);
+                
+                actionButtonsContainer.innerHTML = `
+                    <button type="button" id="confirm-trip-btn" class="btn btn-primary btn-lg me-2">Solicitar Servicio</button>
+                    <button type="button" id="reset-trip-btn" class="btn btn-secondary btn-lg">Reiniciar Viaje</button>
+                `;
+                
+                document.getElementById('reset-trip-btn').addEventListener('click', resetQuote);
+                document.getElementById('confirm-trip-btn').addEventListener('click', handleConfirmTrip);
+            }
         });
 
-        distanceOutput.innerText = `${distanceKm.toFixed(2)} km`;
-        costOutput.innerText = formatter.format(totalCost);
-        
-        resultsSection.style.display = 'block';
-        routeMapContainer.style.display = 'block';
-
-        mapRoute.fitBounds(routingControl.getPlan().getWaypoints().map(wp => wp.latLng));
-        mapRoute.invalidateSize();
-    });
-
-    routingControl.on('routingerror', function(e) {
-        loadingDiv.style.display = 'none';
-        showError('No se pudo encontrar una ruta por carretera entre los puntos seleccionados. Intenta con ubicaciones más cercanas o diferentes.');
-        console.error("Error de enrutamiento:", e);
+        routingControl.on('routingerror', function(e) {
+            loadingDiv.style.display = 'none';
+            showError('No se pudo encontrar una ruta. Intenta con otras ubicaciones.');
+            console.error("Error de enrutamiento:", e);
+        });
     });
 });
+
+/**
+ * Prepara el mensaje detallado de WhatsApp y abre la aplicación.
+ */
+/**
+ * MODIFICADO: Prepara el mensaje de WhatsApp, guarda los datos en el servidor y abre la aplicación.
+ */
+async function handleConfirmTrip() {
+    // Recolectar todos los datos necesarios para la cotización y el mensaje de WhatsApp
+    const quoteDetails = {
+        nombre: document.getElementById('nombrePersona').value,
+        // Usar los valores de los inputs directamente o los confirmados si existen
+        origen: document.getElementById('addressA-input').value || confirmedPoints.A.address,
+        destino: document.getElementById('addressB-input').value || confirmedPoints.B.address,
+        distancia: document.getElementById('distance-output').textContent,
+        costo: document.getElementById('cost-output').textContent,
+        cantidadCargas: document.getElementById('cantidadCargas').value,
+        ayudaCargar: document.getElementById('ayudaCargarSi').checked ? 'Sí' : 'No',
+        ayudaDescargar: document.getElementById('ayudaDescargarSi').checked ? 'Sí' : 'No',
+        ascensor: document.getElementById('ascensorSi').checked ? 'Sí' : 'No',
+        escaleras: document.getElementById('escalerasSi').checked ? 'Sí' : 'No',
+        fecha: document.getElementById('programarFecha').checked ? `${document.getElementById('fecha').value} a las ${document.getElementById('hora').value}` : 'Ahora mismo',
+        descripcion: document.getElementById('descripcionAdicional').value || 'Sin descripción.'
+    };
+
+    // --- LÓGICA DE GUARDADO EN EL SERVIDOR ---
+    const datosParaGuardar = new FormData();
+    datosParaGuardar.append('nombre', quoteDetails.nombre);
+    datosParaGuardar.append('origen', quoteDetails.origen);
+    datosParaGuardar.append('destino', quoteDetails.destino);
+    datosParaGuardar.append('distancia', quoteDetails.distancia);
+    datosParaGuardar.append('costo', quoteDetails.costo);
+    // Asegúrate que el campo 'fecha' coincida con lo que tu PHP espera
+    datosParaGuardar.append('fecha', quoteDetails.fecha);
+    datosParaGuardar.append('timestamp', new Date().toISOString()); // Fecha y hora exacta de la solicitud
+    datosParaGuardar.append('descripcion_adicional', quoteDetails.descripcion); // Campo para la descripción adicional
+
+    try {
+        // La ruta corregida para tu estructura de carpetas: index.php (raíz) -> assets/php/guardar_viaje.php
+        const response = await fetch('assets/php/guardar_viaje.php', {
+            method: 'POST',
+            body: datosParaGuardar
+        });
+        const result = await response.json(); // Espera la respuesta JSON de PHP
+
+        if (result.status === 'success') {
+            console.log('Viaje guardado en el servidor exitosamente:', result.message);
+        } else {
+            // Esto mostrará cualquier error que PHP haya retornado
+            console.error('Error del servidor al guardar el viaje:', result.message);
+        }
+    } catch (error) {
+        // Esto captura errores de red o del lado del cliente antes de recibir respuesta de PHP
+        console.error('Error de conexión o al procesar la respuesta al intentar guardar el viaje:', error);
+    }
+    // --- FIN DE LA LÓGICA DE GUARDADO ---
+
+    // 3. Construir el mensaje de WhatsApp (tu código original)
+    const message = `
+¡Hola Fletes-Ya! Quisiera solicitar el siguiente servicio:
+--------------------------------------
+*Nombre:* ${quoteDetails.nombre}
+*Origen:* ${quoteDetails.origen}
+*Destino:* ${quoteDetails.destino}
+*Distancia:* ${quoteDetails.distancia}
+*Costo Estimado:* ${quoteDetails.costo}
+--------------------------------------
+*Detalles Adicionales:*
+- Cargas: ${quoteDetails.cantidadCargas}
+- Ayuda Carga: ${quoteDetails.ayudaCargar}
+- Ayuda Descarga: ${quoteDetails.ayudaDescargar}
+- Ascensor: ${quoteDetails.ascensor}
+- Escaleras: ${quoteDetails.escaleras}
+- Cuándo: ${quoteDetails.fecha}
+- Descripción: ${quoteDetails.descripcion}
+--------------------------------------
+Por favor, contáctenme para coordinar. ¡Gracias!
+    `.trim().replace(/^\s+/gm, ''); // Elimina espacios iniciales y finales de cada línea
+
+    // 4. Abrir WhatsApp
+    const numeroWhatsApp = '5493813440889'; // Asegúrate de que este número sea correcto y completo con código de país
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank'); // Abre en una nueva pestaña
+}
