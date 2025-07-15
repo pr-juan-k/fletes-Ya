@@ -257,8 +257,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Mostrar resultados y mapa
             quotationFormContainer.style.display = 'none';
             resultsSection.style.display = 'block';
-            mapRoute.fitBounds(e.routes[0].coordinates);
-            mapRoute.invalidateSize();
+            
+            setTimeout(() => {
+                resultsSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }, 100);
+            
             
             // --- NUEVA LÓGICA: bifurcación para viajes largos ---
             if (distanceKm > 15) {
@@ -267,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 costOutput.innerHTML = `<p class="lead text-center fw-bold text-warning">Viaje especial con más de 15 kilómetros, ¡escribinos!</p>`;
                 
                 const specialMessage = "Hola, quisiera cotizar un viaje especial.";
-                const whatsappUrl = `https://api.whatsapp.com/send?phone=5493813440889&text=${encodeURIComponent(specialMessage)}`;
+                const whatsappUrl = `https://api.whatsapp.com/send?phone=5493815827335&text=${encodeURIComponent(specialMessage)}`;
 
                 actionButtonsContainer.innerHTML = `
                     <a href="${whatsappUrl}" target="_blank" class="btn btn-success btn-lg mb-2 w-100">Contactar por Viaje Especial</a>
