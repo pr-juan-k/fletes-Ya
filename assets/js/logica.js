@@ -257,6 +257,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Mostrar resultados y mapa
             quotationFormContainer.style.display = 'none';
             resultsSection.style.display = 'block';
+            mapRoute.fitBounds(e.routes[0].coordinates);
+            mapRoute.invalidateSize();
             
             setTimeout(() => {
                 resultsSection.scrollIntoView({
