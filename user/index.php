@@ -38,7 +38,7 @@
         }
         ?>
 
-        <form action="assets/php/procesar_login.php" method="POST">
+        <form action="../assets/php/procesar_login.php" method="POST">
             <div class="mb-3">
                 <label for="username" class="form-label">Usuario</label>
                 <input type="text" class="form-control" id="username" name="username" required>

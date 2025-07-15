@@ -587,75 +587,70 @@
 
     <!-- Featured Programs Section -->
     <section id="register-section" class="register-section section py-5">
-      <div class="container" data-aos="fade-up">
-  
-          <div class="container section-title text-center mb-5" data-aos="fade-up">
-              <h2 class="display-5 fw-bold mb-3">¡Registrate con <span class="text-primary">Fletes-Ya!</span></h2>
-              <p class="lead text-muted mx-auto" style="max-width: 700px;">Completa el formulario para empezar a disfrutar de nuestros servicios de fletes.</p>
-          </div><div class="row justify-content-center">
-              <div class="col-lg-8 col-md-10">
-                  <div class="card p-4 shadow-lg rounded-lg border-0" data-aos="fade-up" data-aos-delay="100">
-                      <div class="card-body">
-                          <form action="#" method="post" class="php-email-form">
-                              <div class="row gy-4">
-                                  <div class="col-md-6">
-                                      <div class="form-group">
-                                          <label for="nombre" class="form-label">Nombre</label>
-                                          <input type="text" name="nombre" class="form-control" id="nombre" placeholder="Tu nombre" required>
-                                      </div>
-                                  </div>
-                                  <div class="col-md-6">
-                                      <div class="form-group">
-                                          <label for="apellido" class="form-label">Apellido</label>
-                                          <input type="text" name="apellido" class="form-control" id="apellido" placeholder="Tu apellido" required>
-                                      </div>
-                                  </div>
-                              </div>
-  
-                              <div class="row gy-4 mt-3">
-                                  <div class="col-md-6">
-                                      <div class="form-group">
-                                          <label for="email" class="form-label">Correo Electrónico</label>
-                                          <input type="email" class="form-control" name="email" id="email" placeholder="tu@ejemplo.com" required>
-                                      </div>
-                                  </div>
-                                  <div class="col-md-6">
-                                      <div class="form-group">
-                                          <label for="telefono" class="form-label">Número de Teléfono</label>
-                                          <input type="tel" class="form-control" name="telefono" id="telefono" placeholder="Ej: 381 1234567" required>
-                                      </div>
-                                  </div>
-                              </div>
-  
-                              <div class="form-group mt-4">
-                                  <label class="form-label d-block mb-2">Tipo de Cliente:</label>
-                                  <div class="form-check form-check-inline">
-                                      <input class="form-check-input" type="radio" name="tipoCliente" id="nuevoCliente" value="nuevo" required>
-                                      <label class="form-check-label" for="nuevoCliente">Nuevo Cliente</label>
-                                  </div>
-                                  <div class="form-check form-check-inline">
-                                      <input class="form-check-input" type="radio" name="tipoCliente" id="clienteHabitual" value="habitual">
-                                      <label class="form-check-label" for="clienteHabitual">Cliente Habitual</label>
-                                  </div>
-                              </div>
-  
-                              <div class="my-3">
-                                  <div class="loading text-center" style="display:none;">Cargando...</div>
-                                  <div class="error-message text-danger text-center" style="display:none;"></div>
-                                  <div class="sent-message text-success text-center" style="display:none;">¡Tu registro ha sido enviado!</div>
-                              </div>
-  
-                              <div class="text-center mt-4">
-                                  <button type="submit" class="btn btn-primary btn-lg px-5">Registrarse</button>
-                              </div>
-                          </form>
-                      </div>
-                  </div>
-              </div>
-          </div>
-  
-      </div>
-  </section>
+    <div class="container" data-aos="fade-up">
+        <div class="container section-title text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold mb-3">¡Registrate con <span class="text-primary">Fletes-Ya!</span></h2>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">Completa el formulario para empezar a disfrutar de nuestros servicios de fletes.</p>
+        </div>
+        <div class="row justify-content="center>
+            <div class="col-lg-8 col-md-10">
+                <div class="card p-4 shadow-lg rounded-lg border-0" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-body">
+                        <form action="assets/php/registrados.php" method="POST"> 
+                            <div class="row gy-4">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="nombre" class="form-label">Nombre</label>
+                                        <input type="text" name="nombre" class="form-control" id="nombre" placeholder="Tu nombre" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="apellido" class="form-label">Apellido</label>
+                                        <input type="text" name="apellido" class="form-control" id="apellido" placeholder="Tu apellido" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row gy-4 mt-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email" class="form-label">Correo Electrónico</label>
+                                        <input type="email" class="form-control" name="email" id="email" placeholder="tu@ejemplo.com" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="telefono" class="form-label">Número de Teléfono</label>
+                                        <input type="tel" class="form-control" name="telefono" id="telefono" placeholder="Ej: 381 1234567" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group mt-4">
+                                <label class="form-label d-block mb-2">Tipo de Cliente:</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tipoCliente" id="nuevoCliente" value="Nuevo Cliente" required>
+                                    <label class="form-check-label" for="nuevoCliente">Nuevo Cliente</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="tipoCliente" id="clienteHabitual" value="Cliente Habitual">
+                                    <label class="form-check-label" for="clienteHabitual">Cliente Habitual</label>
+                                </div>
+                            </div>
+                            <div class="my-3">
+                                <div class="loading text-center" style="display:none;">Cargando...</div>
+                                <div class="error-message text-danger text-center" style="display:none;"></div>
+                                <div class="sent-message text-success text-center" style="display:none;">¡Tu registro ha sido enviado!</div>
+                            </div>
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">Registrarse</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
     <!-- /Featured Programs Section -->
 
     <!-- sobre nosotros Section -->

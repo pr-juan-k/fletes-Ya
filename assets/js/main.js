@@ -1,6 +1,37 @@
 /*
 Inicio mi JS   
  */
+document.addEventListener('DOMContentLoaded', function() {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get('status');
+  const message = params.get('message');
+  const registerSection = document.getElementById('register-section'); // Asegúrate de que tu sección de registro tenga este ID
+
+  // Selectores para los mensajes dentro de la sección de registro
+  const successMessageDiv = registerSection ? registerSection.querySelector('.sent-message') : null;
+  const errorMessageDiv = registerSection ? registerSection.querySelector('.error-message') : null;
+
+  if (status === 'success_registro' && successMessageDiv) {
+      successMessageDiv.style.display = 'block';
+      // Desplazarse a la sección de registro para ver el mensaje
+      if (registerSection) {
+          registerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      // Limpiar el parámetro de la URL después de mostrar el mensaje
+      history.replaceState({}, document.title, window.location.pathname);
+  } else if (status === 'error_registro' && errorMessageDiv) {
+      errorMessageDiv.innerText = message || 'Hubo un error al procesar tu registro.';
+      errorMessageDiv.style.display = 'block';
+      // Desplazarse a la sección de registro para ver el mensaje
+      if (registerSection) {
+          registerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      // Limpiar el parámetro de la URL después de mostrar el mensaje
+      history.replaceState({}, document.title, window.location.pathname);
+  }
+});
+
+
 // En tu logica.js
 const scrollTop = document.querySelector('#scroll-top');
 const whatsappBtn = document.querySelector('#whatsapp-btn'); // Nueva referencia

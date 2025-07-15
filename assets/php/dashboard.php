@@ -4,7 +4,7 @@ session_start(); // Asegúrate de que esta sea la única llamada a session_start
 // Verifica si el usuario está logueado
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     // Si no está logueado, redirige a la página de login
-    header("Location: login.html");
+    header("Location: ../../user/index.html");
     exit();
 }
 
@@ -96,6 +96,52 @@ if (file_exists($archivoTxt)) {
     krsort($informeMensual);
 }
 
+
+// --- NUEVA LÓGICA PHP PARA LEER REGISTROS ---
+$archivoRegistros = '../../user/registrados.txt'; // Ruta al archivo de registros
+$registros = []; // Array para almacenar los datos de los registros
+
+if (file_exists($archivoRegistros)) {
+    $lineasRegistros = file($archivoRegistros, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    
+    foreach ($lineasRegistros as $linea) {
+        // Formato: 2025-07-15 17:18:51|||juan|||ruiz|||nombeusuar@gmail.com|||2323232323|||Cliente Habitual
+        $datosRegistro = explode('|||', $linea); // Usamos explode con '|||' como delimitador
+
+        if (count($datosRegistro) >= 6) { // Asegúrate de que haya al menos 6 campos
+            try {
+                $timestampRegistro = $datosRegistro[0];
+                $nombreRegistro = $datosRegistro[1];
+                $apellidoRegistro = $datosRegistro[2];
+                $emailRegistro = $datosRegistro[3];
+                $telefonoRegistro = $datosRegistro[4];
+                $tipoClienteRegistro = $datosRegistro[5];
+
+                $fechaHoraRegistro = new DateTime($timestampRegistro);
+                
+                $registros[] = [
+                    'fecha_hora' => $fechaHoraRegistro->format('d/m/Y H:i:s'),
+                    'nombre' => htmlspecialchars($nombreRegistro),
+                    'apellido' => htmlspecialchars($apellidoRegistro),
+                    'email' => htmlspecialchars($emailRegistro),
+                    'telefono' => htmlspecialchars($telefonoRegistro),
+                    'tipo_cliente' => htmlspecialchars($tipoClienteRegistro)
+                ];
+            } catch (Exception $e) {
+                // Puedes loguear el error si es necesario, pero no detener la ejecución
+                // error_log("Error parseando línea de registro: " . $e->getMessage() . " - Línea: " . $linea);
+            }
+        }
+    }
+    // Opcional: Ordenar los registros, por ejemplo, por fecha más reciente primero
+    usort($registros, function($a, $b) {
+        $dateA = DateTime::createFromFormat('d/m/Y H:i:s', $a['fecha_hora']);
+        $dateB = DateTime::createFromFormat('d/m/Y H:i:s', $b['fecha_hora']);
+        return $dateB <=> $dateA; // Orden descendente (más reciente primero)
+    });
+
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -105,6 +151,22 @@ if (file_exists($archivoTxt)) {
     <title>Panel de Control - Informe Detallado</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
+           .accordion-item .accordion-button {
+            background-color: #f8f9fa; /* Light background for accordion headers */
+            font-weight: bold;
+            color: #343a40;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+        .accordion-item .accordion-button:not(.collapsed) {
+            color: #0d6efd; /* Primary color when active */
+            background-color: #e9ecef;
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
+        }
+        .accordion-body .table {
+            margin-bottom: 0; /* Remove bottom margin from table inside accordion body */
+        }
+
+
         .accordion-item .accordion-button {
             background-color: #f8f9fa; /* Light background for accordion headers */
             font-weight: bold;
@@ -127,10 +189,7 @@ if (file_exists($archivoTxt)) {
             <h1 class="mb-4">Bienvenido, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
             <p class="lead">Has iniciado sesión correctamente en el panel de control.</p>
             <hr>
-            <a href="logout.php" class="btn btn-danger">Cerrar Sesión</a>
-        </div>
-
-        <div class="card shadow-sm p-4">
+            <div class="card shadow-sm p-4">
             <h2 class="mb-4">📋 Informe Detallado de Viajes Realizados</h2>
             <p class="text-muted">Despliega cada mes para ver los detalles de los viajes y el total generado.</p>
 
@@ -209,6 +268,50 @@ if (file_exists($archivoTxt)) {
 
                 </div><?php endif; ?>
         </div>
+
+        <div class="card shadow-sm p-4 mt-5"> <h2 class="mb-4">👤 Registros de Clientes</h2>
+            <p class="text-muted">Aquí se muestran todos los registros de clientes capturados por el formulario.</p>
+
+            <?php if (empty($registros)): ?>
+                <div class="alert alert-info text-center" role="alert">
+                    No hay registros de clientes disponibles.
+                </div>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Fecha/Hora</th>
+                                <th scope="col">Nombre</th>
+                                <th scope="col">Apellido</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Teléfono</th>
+                                <th scope="col">Tipo de Cliente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($registros as $registro): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($registro['fecha_hora']); ?></td>
+                                    <td><?php echo htmlspecialchars($registro['nombre']); ?></td>
+                                    <td><?php echo htmlspecialchars($registro['apellido']); ?></td>
+                                    <td><?php echo htmlspecialchars($registro['email']); ?></td>
+                                    <td><?php echo htmlspecialchars($registro['telefono']); ?></td>
+                                    <td><?php echo htmlspecialchars($registro['tipo_cliente']); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </div>
+
+            <a href="logout.php" class="btn btn-danger">Cerrar Sesión</a>
+        </div>
+
+        
+
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>

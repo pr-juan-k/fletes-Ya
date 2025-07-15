@@ -4,7 +4,7 @@ session_start(); // Inicia la sesión para almacenar mensajes de error o el esta
 // Rutas de los archivos
 $userFile = 'users.txt';
 $successPage = 'dashboard.php'; // Página a la que se redirige si el login es exitoso
-$loginPage = '../../user.php'; // Página de login si falla
+$loginPage = '../../user/index.php'; // Página de login si falla
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $inputUsername = $_POST['username'] ?? '';
