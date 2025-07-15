@@ -407,7 +407,7 @@ Por favor, contáctenme para coordinar. ¡Gracias!
     `.trim().replace(/^\s+/gm, ''); // Elimina espacios iniciales y finales de cada línea
 
     // 4. Abrir WhatsApp
-    const numeroWhatsApp = '5493813440889'; // Asegúrate de que este número sea correcto y completo con código de país
+    const numeroWhatsApp = '5493815827335'; // Asegúrate de que este número sea correcto y completo con código de país
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank'); // Abre en una nueva pestaña
 }
