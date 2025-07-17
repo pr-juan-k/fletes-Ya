@@ -2,10 +2,33 @@
 
 @charset "UTF-8";
 
+/* --- Sección "Sobre Nosotros" --- */ /* Esto es solo un comentario de tu CSS existente */
+
+#suggestions-container .list-group-item {
+  cursor: pointer;
+}
+
+#suggestions-container .list-group-item:hover {
+  background-color: #ff7676;
+}
+
+/* Puedes añadir esto a tu archivo CSS */
+.btn-selected-point {
+  background-color: #dc3545 !important; /* Rojo de Bootstrap */
+  border-color: #dc3545 !important;
+  color: white !important;
+  font-weight: bold;
+}
+
 /*--------------------------------------------------------------
 INICIO my stile
 --------------------------------------------------------------*/
 /* --- Sección "Sobre Nosotros" --- */
+
+
+
+
+
 .about-us-block.section {
   background-color: #f8f9fa; /* Fondo ligeramente gris para la sección */
   padding: 80px 0; /* Buen espaciado vertical */
@@ -322,7 +345,7 @@ INICIO my stile
 }
 .btn-info:hover {
   background-color: #9a2626;
-  border-color: #117a8b;
+  border-color: #f3dd8d;
 }
 .results-map-container {
   width: 100%;
@@ -340,7 +363,8 @@ INICIO my stile
   display: none; /* Oculta el panel de instrucciones de la ruta para una UI más limpia */
 }
 #results-section p strong {
-  color: #007bff;
+  font-size: 1.6em;
+  color: #ff0000;
 }
 .loading, .error-message {
   text-align: center;
@@ -350,8 +374,8 @@ INICIO my stile
 }
 .loading {
   background-color: #e0f7fa;
-  color: #007bff;
-  border: 1px solid #007bff;
+  color: #ffb7b7;
+  border: 1px solid #8ac3ff;
 }
 .error-message {
   background-color: #ffebee;
@@ -1195,7 +1219,7 @@ section,
 }
 
 .hero .hero-container .hero-content .cta-buttons .btn-primary {
-  background-color: var(--accent-color);
+  background-color: #f89635;
   color: var(--contrast-color);
   border: 2px solid var(--accent-color);
 }

@@ -4,12 +4,12 @@
 const TARIFA_MINIMA_VIAJE_CORTO = 10000;
 const FACTOR_CALCULO_KM = 2.2;
 const PRECIO_BASE_KM = 1300;
-const DESCUENTO_LARGA_DISTANCIA = 0.10; // 10%
+const DESCUENTO_LARGA_DISTANCIA = 0.85; // -15% entre 7 a 15 kilometros
 
 const COSTO_AYUDA = 5000;
-const COSTO_EXTRA_ASCENSOR_POR_CARGA = 500;
-const COSTO_EXTRA_ESCALERAS_POR_CARGA = 2000;
-const COSTO_POR_CARGA_ADICIONAL = 1000; // <-- NUEVO: Costo de $1000 por cada carga
+const COSTO_EXTRA_ASCENSOR_POR_CARGA = 1000;    // <-- Costo de $1000 por cada carga si hay ascensor
+const COSTO_EXTRA_ESCALERAS_POR_CARGA = 2000;   // <-- Costo de $2000 por cada carga si hay escaleras
+const COSTO_POR_CARGA_ADICIONAL = 1000; // <-- Costo de $1000 por cada carga
 
 let mapModal, mapRoute, temporaryMarker, currentPointType;
 let routingControl = null;
@@ -288,12 +288,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 let costoViaje = 0;
                 if (distanceKm < 2) {
                     costoViaje = TARIFA_MINIMA_VIAJE_CORTO;
-                } else if (distanceKm <= 8) {
-                    costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM;
-                } else {
-                    let costoSinDescuento = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM;
-                    costoViaje = costoSinDescuento * (1 - DESCUENTO_LARGA_DISTANCIA);
-                }
+                } else if (distanceKm < 8) {
+                    costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM * ( DESCUENTO_LARGA_DISTANCIA);
+                } 
 
                 let costosAdicionales = 0;
                 const cantidadCargas = parseInt(document.getElementById('cantidadCargas').value) || 1;
@@ -302,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 costosAdicionales += cantidadCargas * COSTO_POR_CARGA_ADICIONAL;
 
                 if (document.getElementById('ayudaCargarSi').checked) costosAdicionales += COSTO_AYUDA;
-                if (document.getElementById('ayudaDescargarSi').checked) costosAdicionales += COSTO_AYUDA;
+                //if (document.getElementById('ayudaDescargarSi').checked) costosAdicionales += COSTO_AYUDA;
                 if (document.getElementById('ascensorSi').checked) costosAdicionales += (cantidadCargas * COSTO_EXTRA_ASCENSOR_POR_CARGA);
                 if (document.getElementById('escalerasSi').checked) costosAdicionales += (cantidadCargas * COSTO_EXTRA_ESCALERAS_POR_CARGA);
 
@@ -347,7 +344,7 @@ async function handleConfirmTrip() {
         costo: document.getElementById('cost-output').textContent,
         cantidadCargas: document.getElementById('cantidadCargas').value,
         ayudaCargar: document.getElementById('ayudaCargarSi').checked ? 'Sí' : 'No',
-        ayudaDescargar: document.getElementById('ayudaDescargarSi').checked ? 'Sí' : 'No',
+        //ayudaDescargar: document.getElementById('ayudaDescargarSi').checked ? 'Sí' : 'No',
         ascensor: document.getElementById('ascensorSi').checked ? 'Sí' : 'No',
         escaleras: document.getElementById('escalerasSi').checked ? 'Sí' : 'No',
         fecha: document.getElementById('programarFecha').checked ? `${document.getElementById('fecha').value} a las ${document.getElementById('hora').value}` : 'Ahora mismo',
@@ -399,7 +396,6 @@ async function handleConfirmTrip() {
 *Detalles Adicionales:*
 - Cargas: ${quoteDetails.cantidadCargas}
 - Ayuda Carga: ${quoteDetails.ayudaCargar}
-- Ayuda Descarga: ${quoteDetails.ayudaDescargar}
 - Ascensor: ${quoteDetails.ascensor}
 - Escaleras: ${quoteDetails.escaleras}
 - Cuándo: ${quoteDetails.fecha}
@@ -413,3 +409,242 @@ Por favor, contáctenme para coordinar. ¡Gracias!
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank'); // Abre en una nueva pestaña
 }
+
+
+
+
+
+
+
+
+
+
+
+// ELIMINA EL CÓDIGO ANTERIOR Y USA ESTE EN SU LUGAR.
+// Debe ir al final de tu archivo JS.
+document.addEventListener('DOMContentLoaded', () => {
+
+
+
+    // --- INICIO: Lógica de Autocompletado para Inputs Principales ---
+
+/**
+ * Función reutilizable para inicializar el autocompletado en un campo de dirección.
+ * @param {string} inputId ID del campo de texto (ej: 'addressA-input').
+ * @param {string} containerId ID del div que mostrará las sugerencias.
+ * @param {string} latId ID del campo oculto para la latitud.
+ * @param {string} lngId ID del campo oculto para la longitud.
+ * @param {string} displayId ID del campo oculto para la dirección completa.
+ */
+function initializeMainAutocomplete(inputId, containerId, latId, lngId, displayId) {
+    const addressInput = document.getElementById(inputId);
+    const suggestionsContainer = document.getElementById(containerId);
+    const latInput = document.getElementById(latId);
+    const lngInput = document.getElementById(lngId);
+    const displayInput = document.getElementById(displayId);
+
+    let debounceTimeout;
+
+    addressInput.addEventListener('input', () => {
+        clearTimeout(debounceTimeout);
+        const query = addressInput.value.trim();
+
+        if (query.length < 3) {
+            suggestionsContainer.innerHTML = '';
+            return;
+        }
+
+        debounceTimeout = setTimeout(async () => {
+            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}, Tucumán, Argentina&format=json&limit=4`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                suggestionsContainer.innerHTML = ''; // Limpiar sugerencias anteriores
+                data.forEach(place => {
+                    const item = document.createElement('a');
+                    item.href = '#';
+                    item.className = 'list-group-item list-group-item-action';
+                    item.textContent = place.display_name;
+                    
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        
+                        // Rellenar el input visible y los campos ocultos
+                        addressInput.value = place.display_name;
+                        latInput.value = parseFloat(place.lat);
+                        lngInput.value = parseFloat(place.lon);
+                        displayInput.value = place.display_name;
+                        
+                        // Ocultar las sugerencias
+                        suggestionsContainer.innerHTML = '';
+                    });
+                    
+                    suggestionsContainer.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error al obtener sugerencias:', error);
+            }
+        }, 350); // 350ms de espera antes de buscar
+    });
+
+    // Opcional: Ocultar sugerencias si el usuario hace clic fuera
+    document.addEventListener('click', function(event) {
+        if (!addressInput.contains(event.target)) {
+            suggestionsContainer.innerHTML = '';
+        }
+    });
+}
+
+// Ahora, llamamos a la función para inicializar ambos campos
+initializeMainAutocomplete(
+    'addressA-input', 
+    'suggestions-A-container', 
+    'latA', 
+    'lngA', 
+    'display-addressA'
+);
+
+initializeMainAutocomplete(
+    'addressB-input', 
+    'suggestions-B-container', 
+    'latB', 
+    'lngB', 
+    'display-addressB'
+);
+
+// --- FIN: Lógica de Autocompletado ---
+
+
+
+
+    // Referencias a los elementos de búsqueda del modal
+    const mapSearchInput = document.getElementById('map-search-input');
+    const mapSearchBtn = document.getElementById('map-search-btn');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+
+    // **NUEVO: Variable para guardar la selección del autocompletado**
+    // Esto es clave para no tener que volver a buscar.
+    let selectionFromSuggestions = null;
+
+    /**
+     * Función principal para el botón "Ir". AHORA ES MÁS INTELIGENTE.
+     */
+    const geocodeAndCenterInModal = async () => {
+        const addressQuery = mapSearchInput.value.trim();
+        if (!addressQuery) {
+            alert('Por favor, ingresa una dirección.');
+            return;
+        }
+
+        // **LÓGICA CORREGIDA:**
+        // 1. ¿El texto del input coincide con la última sugerencia seleccionada?
+        if (selectionFromSuggestions && selectionFromSuggestions.name === addressQuery) {
+            // ¡Perfecto! Ya tenemos las coordenadas, no hay que buscar de nuevo.
+            updateMapWithCoordinates(selectionFromSuggestions);
+        } else {
+            // 2. Si no coincide, es una búsqueda manual. Geocodificamos.
+            const result = await geocodeAddress(addressQuery + ", Tucumán");
+            if (result) {
+                updateMapWithCoordinates({
+                    lat: result.lat,
+                    lng: result.lng,
+                    name: result.address
+                });
+            } else {
+                alert(`No se encontraron resultados para "${addressQuery}". Intenta ser más específico.`);
+            }
+        }
+    };
+    
+    /**
+     * NUEVA FUNCIÓN ASISTENTE: Actualiza el mapa y las variables.
+     * Esto evita repetir código.
+     * @param {object} locationData - Un objeto con {lat, lng, name}
+     */
+    function updateMapWithCoordinates(locationData) {
+        const newLatLng = [locationData.lat, locationData.lng];
+
+        // 1. Centra el mapa en la coordenada.
+        mapModal.setView(newLatLng, 17);
+
+        // 2. Maneja el marcador temporal.
+        if (!temporaryMarker) {
+            temporaryMarker = L.marker(newLatLng, { draggable: true }).addTo(mapModal);
+        } else {
+            temporaryMarker.setLatLng(newLatLng);
+        }
+
+        // 3. Actualiza tu objeto de selección temporal para el botón "Confirmar".
+        temporarySelection.lat = locationData.lat;
+        temporarySelection.lng = locationData.lng;
+        temporarySelection.address = locationData.name;
+        
+        // Limpia el input y las sugerencias para evitar confusiones.
+        mapSearchInput.value = locationData.name;
+        suggestionsContainer.innerHTML = '';
+    }
+
+    // --- Lógica de Autocompletado (Corregida) ---
+
+    const fetchSuggestions = async (query) => {
+        if (query.length < 3) {
+            suggestionsContainer.innerHTML = '';
+            return;
+        }
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}, Tucumán, Argentina&format=json&limit=4`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            suggestionsContainer.innerHTML = ''; // Limpiar
+            data.forEach(place => {
+                const item = document.createElement('a');
+                item.href = '#';
+                item.className = 'list-group-item list-group-item-action';
+                item.textContent = place.display_name;
+                
+                // Al hacer clic en una sugerencia:
+                item.onclick = (e) => {
+                    e.preventDefault();
+                    // 1. Guardamos los datos completos de la sugerencia (incluidas las coordenadas)
+                    selectionFromSuggestions = {
+                        lat: parseFloat(place.lat),
+                        lng: parseFloat(place.lon),
+                        name: place.display_name
+                    };
+                    // 2. Ponemos el nombre en el input
+                    mapSearchInput.value = place.display_name;
+                    // 3. Ocultamos la lista de sugerencias
+                    suggestionsContainer.innerHTML = '';
+                };
+                suggestionsContainer.appendChild(item);
+            });
+        } catch(e) {
+            console.error("Error fetching suggestions:", e);
+        }
+    };
+    
+    // Disparador del autocompletado con "debounce"
+    let debounceTimeout;
+    mapSearchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimeout);
+        // Si el usuario borra el texto, reseteamos la selección guardada
+        if(mapSearchInput.value.trim() === '') {
+            selectionFromSuggestions = null;
+        }
+        debounceTimeout = setTimeout(() => fetchSuggestions(mapSearchInput.value), 350);
+    });
+
+    // --- ASIGNACIÓN DE EVENTOS ---
+    mapSearchBtn.addEventListener('click', geocodeAndCenterInModal);
+    mapSearchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            geocodeAndCenterInModal();
+        }
+    });
+});
+
+
+
