@@ -144,12 +144,13 @@ function hideMessages() {
     errorMessageDiv.style.display = 'none';
     loadingDiv.style.display = 'none';
 }
-
+// Valida que se carguen los campos obligatorios
 function validateForm() {
     const latA = document.getElementById('latA').value;
     const latB = document.getElementById('latB').value;
     const nombre = document.getElementById('nombrePersona').value;
     const cargas = document.getElementById('cantidadCargas').value;
+    const pisosEscalera = document.getElementById('pisoaEscaleras').value;
 
     if (!nombre.trim()) {
         showError('Por favor, ingresa tu nombre completo.');
@@ -178,7 +179,7 @@ function resetQuote() {
     }
 }
 
-// --- Event Listeners ---
+// --- Event Listeners calculos optengo kilometros y calcular---
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -272,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (distanceKm > 15) {
                 // Caso 1: Viaje especial de más de 15 km
                 distanceOutput.innerText = `${distanceKm.toFixed(2)} km`;
-                costOutput.innerHTML = `<p class="lead text-center fw-bold text-warning">Viaje especial con más de 15 kilómetros, ¡escribinos!</p>`;
+                costOutput.innerHTML = `<p class="lead strong2 text-center fw-bold ">Viaje especial con más de 15 kilómetros, ¡escribinos!</p>`;
                 
                 const specialMessage = "Hola, quisiera cotizar un viaje especial.";
                 const whatsappUrl = `https://api.whatsapp.com/send?phone=5493815827335&text=${encodeURIComponent(specialMessage)}`;
@@ -285,13 +286,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             } else {
                 // Caso 2: Viaje normal (menos de 15 km)
-                let costoViaje = 0;
-                if (distanceKm < 2) {
-                    costoViaje = TARIFA_MINIMA_VIAJE_CORTO;
-                } else if (distanceKm < 8) {
-                    costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM * ( DESCUENTO_LARGA_DISTANCIA);
-                } 
-
                 let costosAdicionales = 0;
                 const cantidadCargas = parseInt(document.getElementById('cantidadCargas').value) || 1;
                 
@@ -301,9 +295,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (document.getElementById('ayudaCargarSi').checked) costosAdicionales += COSTO_AYUDA;
                 //if (document.getElementById('ayudaDescargarSi').checked) costosAdicionales += COSTO_AYUDA;
                 if (document.getElementById('ascensorSi').checked) costosAdicionales += (cantidadCargas * COSTO_EXTRA_ASCENSOR_POR_CARGA);
-                if (document.getElementById('escalerasSi').checked) costosAdicionales += (cantidadCargas * COSTO_EXTRA_ESCALERAS_POR_CARGA);
+                if (document.getElementById('escalerasSi').checked) costosAdicionales += (pisosEscalera * COSTO_EXTRA_ESCALERAS_POR_CARGA);
 
-                const totalCost = costoViaje + costosAdicionales;
+                
+
+                let costoViaje = 0;
+                let calculoDescuento = 0;
+                let totalCost = 0;
+
+                if (distanceKm < 2) {
+                    costoViaje = TARIFA_MINIMA_VIAJE_CORTO;
+                } else 
+                if (distanceKm < 8 && distanceKm > 2) {
+                    costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM ;
+                }if (distanceKm > 8 && distanceKm <15) {
+                    costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM
+                    calculoDescuento = (costoViaje + costosAdicionales) * DESCUENTO_LARGA_DISTANCIA;
+                }
+                if (calculoDescuento != 0) {
+                    totalCost = calculoDescuento;
+                }else{
+                    totalCost = costoViaje + costosAdicionales;
+                }
+                  
+
+                
 
                 const formatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' });
                 distanceOutput.innerText = `${distanceKm.toFixed(2)} km`;
@@ -327,9 +343,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-/**
- * Prepara el mensaje detallado de WhatsApp y abre la aplicación.
- */
 /**
  * MODIFICADO: Prepara el mensaje de WhatsApp, guarda los datos en el servidor y abre la aplicación.
  */
@@ -398,6 +411,7 @@ async function handleConfirmTrip() {
 - Ayuda Carga: ${quoteDetails.ayudaCargar}
 - Ascensor: ${quoteDetails.ascensor}
 - Escaleras: ${quoteDetails.escaleras}
+- Pisos: ${quoteDetails.pisosEscalera}
 - Cuándo: ${quoteDetails.fecha}
 - Descripción: ${quoteDetails.descripcion}
 --------------------------------------
@@ -420,8 +434,8 @@ Por favor, contáctenme para coordinar. ¡Gracias!
 
 
 
-// ELIMINA EL CÓDIGO ANTERIOR Y USA ESTE EN SU LUGAR.
-// Debe ir al final de tu archivo JS.
+
+// Codigo para sugerencia de direcciones en mapa y en campo
 document.addEventListener('DOMContentLoaded', () => {
 
 

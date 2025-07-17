@@ -105,7 +105,7 @@
                                         <!--CargarPunto A -->
                                         <div class="col-md-12">
                                             <label for="addressA-input" class="form-label">Punto A (Origen):</label>
-                                            <div class="input-group">
+                                            <div class="input-group delete">
                                                 <input type="text" id="addressA-input" class="form-control" placeholder="Ej: Av. Roca 100, Tucumán">
                                                 <button type="button" class="btn btn-outline-secondary" id="geocode-A-btn">Buscar</button>
                                             </div>
@@ -117,7 +117,7 @@
                                         <!--CargarPunto B -->
                                         <div class="col-md-12">
                                             <label for="addressB-input" class="form-label">Punto B (Destino):</label>
-                                            <div class="input-group">
+                                            <div class="input-group delete">
                                                 <input type="text" id="addressB-input" class="form-control" placeholder="Ej: San Martín 500, Tucumán">
                                                 <button type="button" class="btn btn-outline-secondary" id="geocode-B-btn">Buscar</button>
                                             </div>
@@ -171,6 +171,10 @@
                                                 <input class="form-check-input" type="radio" name="escaleras" id="escalerasNo" value="no" checked>
                                                 <label class="form-check-label" for="escalerasNo">No</label>
                                             </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label for="pisos" class="form-label">Cantidad de pisos:</label>
+                                            <input type="number" class="form-control" id="pisoaEscaleras" name="pisos" min="0" placeholder="Ej: 1" >
                                         </div>
                         
                                         <div class="col-md-12">

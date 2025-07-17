@@ -3,6 +3,11 @@
 @charset "UTF-8";
 
 /* --- Sección "Sobre Nosotros" --- */ /* Esto es solo un comentario de tu CSS existente */
+.delete{
+  display: none;
+}
+
+
 
 #suggestions-container .list-group-item {
   cursor: pointer;
@@ -330,6 +335,7 @@ INICIO my stile
 .btn-primary, .btn-success, .btn-info, .btn-danger { /* Añadido btn-danger para reiniciar */
   border-radius: .50rem;
   font-weight: bold;
+  margin: 1em;
 }
 .btn-success {
   background-color: #28a745;
@@ -363,9 +369,14 @@ INICIO my stile
   display: none; /* Oculta el panel de instrucciones de la ruta para una UI más limpia */
 }
 #results-section p strong {
-  font-size: 1.6em;
+  font-size: 1.4em;
   color: #ff0000;
 }
+.strong2 {
+  font-size: 1.4em;
+  color: #ff0000;
+}
+
 .loading, .error-message {
   text-align: center;
   padding: 10px;
