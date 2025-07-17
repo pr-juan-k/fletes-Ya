@@ -303,10 +303,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 let calculoDescuento = 0;
                 let totalCost = 0;
 
-                if (distanceKm < 2) {
+                if (distanceKm < 3) {
                     costoViaje = TARIFA_MINIMA_VIAJE_CORTO;
                 } else 
-                if (distanceKm < 8 && distanceKm > 2) {
+                if (distanceKm < 8 && distanceKm > 3) {
                     costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM ;
                 }if (distanceKm > 8 && distanceKm <15) {
                     costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM
