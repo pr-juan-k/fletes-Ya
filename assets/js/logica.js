@@ -178,7 +178,6 @@ function validateForm() {
     const latB = document.getElementById('latB').value;
     const nombre = document.getElementById('nombrePersona').value;
     const cargas = document.getElementById('cantidadCargas').value;
-
     
     if (!nombre.trim()) {
         showError('Por favor, ingresa tu nombre completo.');
@@ -224,31 +223,29 @@ const pisosEscaleraInput = document.getElementById('pisosEscalera');
 
 let pisosEscalera = 0; // Variable global para almacenar el número de pisos
 
-if (pisosEscaleraGroup && pisosEscaleraInput) {
-    // Si 'No' está seleccionado al cargar, oculta y resetea
+// Inicialmente, oculta el campo de pisos
+if (pisosEscaleraGroup) {
+    // Si escalerasNoRadio está chequeado al cargar, oculta el grupo
     if (escalerasNoRadio && escalerasNoRadio.checked) {
         pisosEscaleraGroup.style.display = 'none';
         pisosEscaleraInput.removeAttribute('required');
         pisosEscaleraInput.value = '';
         pisosEscalera = 0;
     } else {
-        // Si 'Sí' está seleccionado o ninguno (y 'Sí' es el predeterminado), muestra y asigna valor
+        // Si no está chequeado (o 'Sí' lo está por default), asegura que esté visible
         pisosEscaleraGroup.style.display = 'block';
         pisosEscaleraInput.setAttribute('required', 'required');
-        // Asegúrate de que la variable refleje el valor actual del input al cargar
-        pisosEscalera = parseInt(pisosEscaleraInput.value) || 0;
+        // Inicializa pisosEscalera con el valor actual del input o 0 si está vacío/no numérico
+        pisosEscalera = parseInt(pisosEscaleraInput.value) || 0; 
     }
 }
 
 if (escalerasSiRadio) {
     escalerasSiRadio.addEventListener('change', function() {
         if (this.checked) {
-            if (pisosEscaleraGroup) pisosEscaleraGroup.style.display = 'block';
-            if (pisosEscaleraInput) {
-                pisosEscaleraInput.setAttribute('required', 'required');
-                // Actualiza pisosEscalera con el valor actual del input (o 1 por defecto si está vacío)
-                pisosEscalera = parseInt(pisosEscaleraInput.value) || 1;
-            }
+            pisosEscaleraGroup.style.display = 'block';
+            pisosEscaleraInput.setAttribute('required', 'required'); // Hacerlo requerido
+            pisosEscalera = parseInt(pisosEscaleraInput.value) || 1; // Asigna el valor inicial o 1
         }
     });
 }
@@ -258,8 +255,8 @@ if (escalerasNoRadio) {
         if (this.checked) {
             if (pisosEscaleraGroup) pisosEscaleraGroup.style.display = 'none';
             if (pisosEscaleraInput) {
-                pisosEscaleraInput.removeAttribute('required');
-                pisosEscaleraInput.value = ''; // Limpiar el valor del input
+                pisosEscaleraInput.removeAttribute('required'); // Quitar requerido
+                pisosEscaleraInput.value = ''; // Limpiar el valor
             }
             pisosEscalera = 0; // Resetear la variable a 0
         }
@@ -268,9 +265,8 @@ if (escalerasNoRadio) {
 
 if (pisosEscaleraInput) {
     pisosEscaleraInput.addEventListener('input', function() {
-        pisosEscalera = parseInt(this.value) || 0;
-        // Opcional: Para depurar, descomenta la siguiente línea
-        // console.log('pisosEscalera actualizada al escribir:', pisosEscalera);
+        // CAMBIO CRÍTICO: Actualizar la variable al cambiar el input
+        pisosEscalera = parseInt(this.value) || 0; 
     });
 }
 
@@ -321,7 +317,7 @@ async function handleConfirmTrip() {
         ayudaCargar: document.getElementById('ayudaCargarSi').checked ? 'Sí' : 'No',
         ascensor: document.getElementById('ascensorSi').checked ? 'Sí' : 'No',
         escaleras: document.getElementById('escalerasSi').checked ? 'Sí' : 'No',
-        cantidadCargass: parseInt.apply(document.getElementById('cantidadCargas2').value), // Asegúrate de obtener el valor correcto
+        pisosEscalera: document.getElementById('pisoaEscaleras').value, // Asegúrate de obtener el valor correcto
         
         fecha: document.getElementById('programarFecha').checked ? `${document.getElementById('fecha').value} a las ${document.getElementById('hora').value}` : 'Ahora mismo',
         descripcion: document.getElementById('descripcionAdicional').value || 'Sin descripción.'
@@ -367,7 +363,7 @@ async function handleConfirmTrip() {
 - Ayuda Carga: ${quoteDetails.ayudaCargar}
 - Ascensor: ${quoteDetails.ascensor}
 - Escaleras: ${quoteDetails.escaleras}
-- Pisos: ${quoteDetails.cantidadCargass}
+- Pisos: ${quoteDetails.pisosEscalera}
 - Cuándo: ${quoteDetails.fecha}
 - Descripción: ${quoteDetails.descripcion}
 --------------------------------------
@@ -488,13 +484,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 let costosAdicionales = 0;
 
-                const cantidadCargas = parseInt(document.getElementById('cantidadCargas2').value) || 1;
-                const cantidad = parseInt(document.getElementById('cantidadCargas2').value);
+                const cantidadCargas = parseInt(document.getElementById('cantidadCargas').value) || 1;
+                const pisos = parseInt(document.getElementById('pisoaEscaleras').value) || 1;
+
                 costosAdicionales += cantidadCargas * COSTO_POR_CARGA_ADICIONAL;
 
                 if (document.getElementById('ayudaCargarSi').checked) costosAdicionales += COSTO_AYUDA;
                 if (document.getElementById('ascensorSi').checked) costosAdicionales += (cantidadCargas * COSTO_EXTRA_ASCENSOR_POR_CARGA);
-                if (document.getElementById('escalerasSi').checked) costosAdicionales += ((cantidad) * COSTO_EXTRA_ESCALERAS_POR_CARGA);
+                if (document.getElementById('escalerasSi').checked) costosAdicionales += (pisos * COSTO_EXTRA_ESCALERAS_POR_CARGA);
 
                 let costoViaje = 0;
                 let calculoDescuento = 0;
@@ -518,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (distanceKm > 2 && distanceKm < 8) {
                     costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM;
                     totalCost = costoViaje + costosAdicionales;
-                } else if (distanceKm >= 8 && distanceKm < 15) {
+                } else if (distanceKm > 8 && distanceKm < 15) {
                     costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM;
                     let costoTotalSinDescuento = costoViaje + costosAdicionales;
                     calculoDescuento = costoTotalSinDescuento * DESCUENTO_LARGA_DISTANCIA;
