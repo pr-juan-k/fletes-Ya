@@ -1,6 +1,6 @@
 // --- Constantes y Variables Globales ---
 
-// --- CONSTANTES DE CÁLCULO --- ??
+// --- CONSTANTES DE CÁLCULO ---
 const TARIFA_MINIMA_VIAJE_CORTO = 10000;
 const FACTOR_CALCULO_KM = 2.2;
 const PRECIO_BASE_KM = 1300;
@@ -8,8 +8,17 @@ const DESCUENTO_LARGA_DISTANCIA = 0.85; // -15% entre 7 a 15 kilometros
 
 const COSTO_AYUDA = 5000;
 const COSTO_EXTRA_ASCENSOR_POR_CARGA = 1000;    // <-- Costo de $1000 por cada carga si hay ascensor
-const COSTO_EXTRA_ESCALERAS_POR_CARGA = 2000;  // <-- Costo de $2000 por cada carga si hay escaleras
+const COSTO_EXTRA_ESCALERAS_POR_CARGA = 2000; // <-- Costo de $2000 por cada carga si hay escaleras
 const COSTO_POR_CARGA_ADICIONAL = 1000; // <-- Costo de $1000 por cada carga
+
+
+let addressInputA = null; // Asumiendo que tienes un input para la dirección A
+let suggestionsContainerA = null; // Asumiendo que tienes un contenedor para las sugerencias de A
+
+// Si tienes dos inputs (A y B) para las direcciones, necesitarás dos pares
+let addressInputB = null;
+let suggestionsContainerB = null;
+
 
 let mapModal, mapRoute, temporaryMarker, currentPointType;
 let routingControl = null;
@@ -67,7 +76,6 @@ function handleMapModalClick(event) {
             temporarySelection.address = data.display_name || 'Ubicación seleccionada';
             
             // --- CAMBIO 1: ACTUALIZAR EL INPUT DENTRO DEL MODAL ---
-            // Esto asegura que si haces clic en el mapa, el input también se actualice.
             const mapSearchInput = document.getElementById('map-search-input');
             if(mapSearchInput) mapSearchInput.value = temporarySelection.address;
         })
@@ -78,7 +86,6 @@ function handleMapModalClick(event) {
 }
 
 function confirmPointSelection() {
-    // Si el usuario movió el marcador, se actualizan las coordenadas finales
     if (temporaryMarker) {
         const finalLatLng = temporaryMarker.getLatLng();
         temporarySelection.lat = finalLatLng.lat;
@@ -88,17 +95,18 @@ function confirmPointSelection() {
     if (temporarySelection.lat && temporarySelection.lng) {
         confirmedPoints[currentPointType] = { ...temporarySelection };
 
+        // **CRÍTICO: Asegurarse de que el input visible y el oculto se actualicen**
         document.getElementById(`address${currentPointType}-input`).value = confirmedPoints[currentPointType].address;
         document.getElementById(`lat${currentPointType}`).value = confirmedPoints[currentPointType].lat;
         document.getElementById(`lng${currentPointType}`).value = confirmedPoints[currentPointType].lng;
-        // El input 'display-address' es opcional, si no lo usas, puedes borrar esta línea.
-        if (document.getElementById(`display-address${currentPointType}`)) {
-            document.getElementById(`display-address${currentPointType}`).value = confirmedPoints[currentPointType].address;
+        
+        const displayAddressInput = document.getElementById(`display-address${currentPointType}`);
+        if (displayAddressInput) {
+            displayAddressInput.value = confirmedPoints[currentPointType].address; // ¡Esto dispara el MutationObserver!
         }
     }
 }
 
-// ... (El resto de tus funciones como geocodeAddress, handleGeocodeButtonClick, etc., quedan exactamente igual) ...
 async function geocodeAddress(address) {
     try {
         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&countrycodes=ar`);
@@ -138,8 +146,10 @@ async function handleGeocodeButtonClick(pointType) {
         confirmedPoints[pointType] = result;
         document.getElementById(`lat${pointType}`).value = result.lat;
         document.getElementById(`lng${pointType}`).value = result.lng;
-        if(document.getElementById(`display-address${pointType}`)){
-             document.getElementById(`display-address${pointType}`).value = result.address;
+        
+        const displayAddressInput = document.getElementById(`display-address${pointType}`);
+        if(displayAddressInput){
+            displayAddressInput.value = result.address; // ¡Esto también dispara el MutationObserver!
         }
     } else {
         showError(`No se pudo encontrar la dirección para el Punto ${pointType}.`);
@@ -162,11 +172,13 @@ function hideMessages() {
     errorMessageDiv.style.display = 'none';
     loadingDiv.style.display = 'none';
 }
+
 function validateForm() {
     const latA = document.getElementById('latA').value;
     const latB = document.getElementById('latB').value;
     const nombre = document.getElementById('nombrePersona').value;
     const cargas = document.getElementById('cantidadCargas').value;
+
     
     if (!nombre.trim()) {
         showError('Por favor, ingresa tu nombre completo.');
@@ -190,11 +202,185 @@ function resetQuote() {
         mapRoute.removeControl(routingControl);
         routingControl = null;
     }
+    // Opcional: Limpiar los campos de dirección al reiniciar
+    document.getElementById('addressA-input').value = '';
+    document.getElementById('addressB-input').value = '';
+    document.getElementById('latA').value = '';
+    document.getElementById('lngA').value = '';
+    document.getElementById('latB').value = '';
+    document.getElementById('lngB').value = '';
+    document.getElementById('display-addressA').value = ''; // ¡También limpiar el hidden!
+    document.getElementById('display-addressB').value = ''; // ¡También limpiar el hidden!
+    // y resetear los geocode buttons si quieres:
+    geocodeAButton.textContent = 'Punto A (Origen)';
+    geocodeBButton.textContent = 'Punto B (Destino)';
 }
 
-// --- Event Listeners ---
+// VALORES PARA LOS INPUTS DE ESCALERAS (SI/NO)
+const escalerasSiRadio = document.getElementById('escalerasSi');
+const escalerasNoRadio = document.getElementById('escalerasNo');
+const pisosEscaleraGroup = document.getElementById('pisosEscaleraGroup');
+const pisosEscaleraInput = document.getElementById('pisosEscalera');
+
+let pisosEscalera = 0; // Variable global para almacenar el número de pisos
+
+if (pisosEscaleraGroup && pisosEscaleraInput) {
+    // Si 'No' está seleccionado al cargar, oculta y resetea
+    if (escalerasNoRadio && escalerasNoRadio.checked) {
+        pisosEscaleraGroup.style.display = 'none';
+        pisosEscaleraInput.removeAttribute('required');
+        pisosEscaleraInput.value = '';
+        pisosEscalera = 0;
+    } else {
+        // Si 'Sí' está seleccionado o ninguno (y 'Sí' es el predeterminado), muestra y asigna valor
+        pisosEscaleraGroup.style.display = 'block';
+        pisosEscaleraInput.setAttribute('required', 'required');
+        // Asegúrate de que la variable refleje el valor actual del input al cargar
+        pisosEscalera = parseInt(pisosEscaleraInput.value) || 0;
+    }
+}
+
+if (escalerasSiRadio) {
+    escalerasSiRadio.addEventListener('change', function() {
+        if (this.checked) {
+            if (pisosEscaleraGroup) pisosEscaleraGroup.style.display = 'block';
+            if (pisosEscaleraInput) {
+                pisosEscaleraInput.setAttribute('required', 'required');
+                // Actualiza pisosEscalera con el valor actual del input (o 1 por defecto si está vacío)
+                pisosEscalera = parseInt(pisosEscaleraInput.value) || 1;
+            }
+        }
+    });
+}
+
+if (escalerasNoRadio) {
+    escalerasNoRadio.addEventListener('change', function() {
+        if (this.checked) {
+            if (pisosEscaleraGroup) pisosEscaleraGroup.style.display = 'none';
+            if (pisosEscaleraInput) {
+                pisosEscaleraInput.removeAttribute('required');
+                pisosEscaleraInput.value = ''; // Limpiar el valor del input
+            }
+            pisosEscalera = 0; // Resetear la variable a 0
+        }
+    });
+}
+
+if (pisosEscaleraInput) {
+    pisosEscaleraInput.addEventListener('input', function() {
+        pisosEscalera = parseInt(this.value) || 0;
+        // Opcional: Para depurar, descomenta la siguiente línea
+        // console.log('pisosEscalera actualizada al escribir:', pisosEscalera);
+    });
+}
+
+// Lógica para mostrar/ocultar campos de fecha y hora
+const programarFechaCheckbox = document.getElementById('programarFecha');
+const fechaGroup = document.getElementById('fechaGroup');
+const horaGroup = document.getElementById('horaGroup');
+const fechaInput = document.getElementById('fecha');
+const horaInput = document.getElementById('hora');
+
+// Inicialmente, oculta los campos de fecha y hora
+if (fechaGroup && horaGroup) {
+    fechaGroup.style.display = 'none';
+    horaGroup.style.display = 'none';
+}
+
+if (programarFechaCheckbox) {
+    programarFechaCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            if (fechaGroup) fechaGroup.style.display = 'block';
+            if (horaGroup) horaGroup.style.display = 'block';
+            if (fechaInput) fechaInput.setAttribute('required', 'required');
+            if (horaInput) horaInput.setAttribute('required', 'required');
+        } else {
+            if (fechaGroup) fechaGroup.style.display = 'none';
+            if (horaGroup) horaGroup.style.display = 'none';
+            if (fechaInput) {
+                fechaInput.removeAttribute('required');
+                fechaInput.value = '';
+            }
+            if (horaInput) {
+                horaInput.removeAttribute('required');
+                horaInput.value = '';
+            }
+        }
+    });
+}
+
+
+async function handleConfirmTrip() {
+    const quoteDetails = {
+        nombre: document.getElementById('nombrePersona').value,
+        origen: document.getElementById('addressA-input').value || confirmedPoints.A.address,
+        destino: document.getElementById('addressB-input').value || confirmedPoints.B.address,
+        distancia: document.getElementById('distance-output').textContent,
+        costo: document.getElementById('cost-output').textContent,
+        cantidadCargas: document.getElementById('cantidadCargas').value,
+        ayudaCargar: document.getElementById('ayudaCargarSi').checked ? 'Sí' : 'No',
+        ascensor: document.getElementById('ascensorSi').checked ? 'Sí' : 'No',
+        escaleras: document.getElementById('escalerasSi').checked ? 'Sí' : 'No',
+        cantidadCargass: parseInt.apply(document.getElementById('cantidadCargas2').value), // Asegúrate de obtener el valor correcto
+        
+        fecha: document.getElementById('programarFecha').checked ? `${document.getElementById('fecha').value} a las ${document.getElementById('hora').value}` : 'Ahora mismo',
+        descripcion: document.getElementById('descripcionAdicional').value || 'Sin descripción.'
+    };
+
+    const datosParaGuardar = new FormData();
+    datosParaGuardar.append('nombre', quoteDetails.nombre);
+    datosParaGuardar.append('origen', quoteDetails.origen);
+    datosParaGuardar.append('destino', quoteDetails.destino);
+    datosParaGuardar.append('distancia', quoteDetails.distancia);
+    datosParaGuardar.append('costo', quoteDetails.costo);
+    datosParaGuardar.append('fecha', quoteDetails.fecha);
+    datosParaGuardar.append('timestamp', new Date().toISOString());
+    datosParaGuardar.append('descripcion_adicional', quoteDetails.descripcion);
+
+    try {
+        const response = await fetch('assets/php/guardar_viaje.php', {
+            method: 'POST',
+            body: datosParaGuardar
+        });
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            console.log('Viaje guardado en el servidor exitosamente:', result.message);
+        } else {
+            console.error('Error del servidor al guardar el viaje:', result.message);
+        }
+    } catch (error) {
+        console.error('Error de conexión o al procesar la respuesta al intentar guardar el viaje:', error);
+    }
+
+    const message = `
+¡Hola Fletes-Ya! Quisiera solicitar el siguiente servicio:
+--------------------------------------
+*Nombre:* ${quoteDetails.nombre}
+*Origen:* ${quoteDetails.origen}
+*Destino:* ${quoteDetails.destino}
+*Distancia:* ${quoteDetails.distancia}
+*Costo Estimado:* ${quoteDetails.costo}
+--------------------------------------
+*Detalles Adicionales:*
+- Cargas: ${quoteDetails.cantidadCargas}
+- Ayuda Carga: ${quoteDetails.ayudaCargar}
+- Ascensor: ${quoteDetails.ascensor}
+- Escaleras: ${quoteDetails.escaleras}
+- Pisos: ${quoteDetails.cantidadCargass}
+- Cuándo: ${quoteDetails.fecha}
+- Descripción: ${quoteDetails.descripcion}
+--------------------------------------
+Por favor, contáctenme para coordinar. ¡Gracias!
+    `.trim().replace(/^\s+/gm, '');
+
+    const numeroWhatsApp = '5493815827335';
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+// --- Event Listeners y Lógica de Carga Inicial ---
 document.addEventListener('DOMContentLoaded', function() {
-    
     initializeRouteMap();
 
     mapModalElement.addEventListener('show.bs.modal', function (event) {
@@ -203,8 +389,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.getElementById('mapModalLabel').innerText = `Seleccionar Punto ${currentPointType}`;
         
-        // --- CAMBIO 2: LA SOLUCIÓN PARA REINICIAR EL INPUT ---
-        // Limpiamos el campo de búsqueda del modal cada vez que se abre. ¡Esta es la clave!
         const mapSearchInput = document.getElementById('map-search-input');
         if (mapSearchInput) {
             mapSearchInput.value = '';
@@ -222,7 +406,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // ... (El resto de tus listeners y lógica dentro de DOMContentLoaded se mantiene igual) ...
     mapModalElement.addEventListener('shown.bs.modal', function() {
         if (mapModal) {
             mapModal.invalidateSize();
@@ -232,138 +415,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('confirm-selection-btn').addEventListener('click', confirmPointSelection);
     geocodeAButton.addEventListener('click', () => handleGeocodeButtonClick('A'));
     geocodeBButton.addEventListener('click', () => handleGeocodeButtonClick('B'));
+    
+    // **Calculo de Viaje - Event Listener Único y Corregido**
     calculateButton.addEventListener('click', function() {
-        // Tu lógica de cálculo de viaje va aquí...
-        calculateButton.addEventListener('click', function() {
-            hideMessages();
-            
-            if (!validateForm()) return;
-    
-            loadingDiv.innerText = 'Calculando ruta...';
-            loadingDiv.style.display = 'block';
-    
-            if (routingControl && mapRoute) {
-                mapRoute.removeControl(routingControl);
-                routingControl = null;
-            }
-    
-            routingControl = L.Routing.control({
-                waypoints: [
-                    L.latLng(confirmedPoints.A.lat, confirmedPoints.A.lng),
-                    L.latLng(confirmedPoints.B.lat, confirmedPoints.B.lng)
-                ],
-                router: L.Routing.osrmv1({ serviceUrl: `https://router.project-osrm.org/route/v1` }),
-                routeWhileDragging: false,
-                addWaypoints: false,
-                show: false,
-                createMarker: function(i, waypoint, n) {
-                    const markerLabel = i === 0 ? 'Punto A (Origen)' : 'Punto B (Destino)';
-                    return L.marker(waypoint.latLng, {
-                        draggable: false,
-                        icon: L.icon({
-                            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                            iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                            popupAnchor: [1, -34],
-                            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                            shadowSize: [41, 41]
-                        })
-                    }).bindPopup(`<b>${markerLabel}</b>`);
-                }
-            }).addTo(mapRoute);
-    
-            routingControl.on('routesfound', function(e) {
-                loadingDiv.style.display = 'none';
-                const summary = e.routes[0].summary;
-                const distanceKm = summary.totalDistance / 1000;
-                
-                // Mostrar resultados y mapa
-                quotationFormContainer.style.display = 'none';
-                resultsSection.style.display = 'block';
-                mapRoute.fitBounds(e.routes[0].coordinates);
-                mapRoute.invalidateSize();
-                
-                setTimeout(() => {
-                    resultsSection.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }, 100);
-                
-                
-                // --- NUEVA L�GICA: bifurcaci�n para viajes largos ---
-                if (distanceKm > 15) {
-                    // Caso 1: Viaje especial de m�s de 15 km
-                    distanceOutput.innerText = `${distanceKm.toFixed(2)} km`;
-                    costOutput.innerHTML = `<p class="lead strong2 text-center fw-bold ">Viaje especial con mas de 15 kilometros, escribinos!</p>`;
-                    
-                    const specialMessage = "Hola, quisiera cotizar un viaje especial.";
-                    const whatsappUrl = `https://api.whatsapp.com/send?phone=5493815827335&text=${encodeURIComponent(specialMessage)}`;
-    
-                    actionButtonsContainer.innerHTML = `
-                        <a href="${whatsappUrl}" target="_blank" class="btn btn-success btn-lg mb-2 w-100">Contactar por Viaje Especial</a>
-                        <button type="button" id="reset-trip-btn" class="btn btn-secondary btn-lg w-100">Reiniciar Viaje</button>
-                    `;
-                    document.getElementById('reset-trip-btn').addEventListener('click', resetQuote);
-    
-                } else {
-                    // Caso 2: Viaje normal (menos de 15 km)
-                    let costosAdicionales = 0;
-                    const cantidadCargas = parseInt(document.getElementById('cantidadCargas').value) || 1;
-                    
-                    // NUEVO: Se suma el costo por cada carga
-                    costosAdicionales += cantidadCargas * COSTO_POR_CARGA_ADICIONAL;
-    
-                    if (document.getElementById('ayudaCargarSi').checked) costosAdicionales += COSTO_AYUDA;
-                    //if (document.getElementById('ayudaDescargarSi').checked) costosAdicionales += COSTO_AYUDA;
-                    if (document.getElementById('ascensorSi').checked) costosAdicionales += (cantidadCargas * COSTO_EXTRA_ASCENSOR_POR_CARGA);
-                    if (document.getElementById('escalerasSi').checked) costosAdicionales += (pisosEscalera * COSTO_EXTRA_ESCALERAS_POR_CARGA);
-    
-                    
-    
-                    let costoViaje = 0;
-                    let calculoDescuento = 0;
-                    let totalCost = 0;
-    
-                    if (distanceKm < 3) {
-                        costoViaje = TARIFA_MINIMA_VIAJE_CORTO;
-                    } else 
-                    if (distanceKm < 8 && distanceKm > 3) {
-                        costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM ;
-                    }if (distanceKm > 8 && distanceKm <15) {
-                        costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM
-                        calculoDescuento = (costoViaje + costosAdicionales) * DESCUENTO_LARGA_DISTANCIA;
-                    }
-                    if (calculoDescuento != 0) {
-                        totalCost = calculoDescuento;
-                    }else{
-                        totalCost = costoViaje + costosAdicionales;
-                    }
-                      
-    
-                    
-    
-                    const formatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' });
-                    distanceOutput.innerText = `${distanceKm.toFixed(2)} km`;
-                    costOutput.innerText = formatter.format(totalCost);
-                    
-                    actionButtonsContainer.innerHTML = `
-                        <button type="button" id="confirm-trip-btn" class="btn btn-primary btn-lg me-2">Solicitar Servicio</button>
-                        <button type="button" id="reset-trip-btn" class="btn btn-secondary btn-lg">Reiniciar Viaje</button>
-                    `;
-                    
-                    document.getElementById('reset-trip-btn').addEventListener('click', resetQuote);
-                    document.getElementById('confirm-trip-btn').addEventListener('click', handleConfirmTrip);
-                }
-            });
-    
-            routingControl.on('routingerror', function(e) {
-                loadingDiv.style.display = 'none';
-                showError('No se pudo encontrar una ruta. Intenta con otras ubicaciones.');
-                console.error("Error de enrutamiento:", e);
-            });
-        });
-
         hideMessages();
         
         if (!validateForm()) return;
@@ -406,7 +460,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const summary = e.routes[0].summary;
             const distanceKm = summary.totalDistance / 1000;
             
-            // Mostrar resultados y mapa
             quotationFormContainer.style.display = 'none';
             resultsSection.style.display = 'block';
             mapRoute.fitBounds(e.routes[0].coordinates);
@@ -419,12 +472,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }, 100);
             
-            
-            // --- NUEVA L�GICA: bifurcaci�n para viajes largos ---
             if (distanceKm > 15) {
-                // Caso 1: Viaje especial de m�s de 15 km
                 distanceOutput.innerText = `${distanceKm.toFixed(2)} km`;
-                costOutput.innerHTML = `<p class="lead strong2 text-center fw-bold ">Viaje especial con m�s de 15 kil�metros, �escribinos!</p>`;
+                costOutput.innerHTML = `<p class="lead strong2 text-center fw-bold ">Viaje especial con más de 15 kilómetros, ¡escribinos!</p>`;
                 
                 const specialMessage = "Hola, quisiera cotizar un viaje especial.";
                 const whatsappUrl = `https://api.whatsapp.com/send?phone=5493815827335&text=${encodeURIComponent(specialMessage)}`;
@@ -436,42 +486,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('reset-trip-btn').addEventListener('click', resetQuote);
 
             } else {
-                // Caso 2: Viaje normal (menos de 15 km)
                 let costosAdicionales = 0;
-                const cantidadCargas = parseInt(document.getElementById('cantidadCargas').value) || 1;
-                
-                // NUEVO: Se suma el costo por cada carga
+
+                const cantidadCargas = parseInt(document.getElementById('cantidadCargas2').value) || 1;
+                const cantidad = parseInt(document.getElementById('cantidadCargas2').value);
                 costosAdicionales += cantidadCargas * COSTO_POR_CARGA_ADICIONAL;
 
                 if (document.getElementById('ayudaCargarSi').checked) costosAdicionales += COSTO_AYUDA;
-                //if (document.getElementById('ayudaDescargarSi').checked) costosAdicionales += COSTO_AYUDA;
                 if (document.getElementById('ascensorSi').checked) costosAdicionales += (cantidadCargas * COSTO_EXTRA_ASCENSOR_POR_CARGA);
-                if (document.getElementById('escalerasSi').checked) costosAdicionales += (pisosEscalera * COSTO_EXTRA_ESCALERAS_POR_CARGA);
-
-                
+                if (document.getElementById('escalerasSi').checked) costosAdicionales += ((cantidad) * COSTO_EXTRA_ESCALERAS_POR_CARGA);
 
                 let costoViaje = 0;
                 let calculoDescuento = 0;
                 let totalCost = 0;
+                let incremento_especial = costosAdicionales - COSTO_POR_CARGA_ADICIONAL;
 
-                if (distanceKm < 3) {
-                    costoViaje = TARIFA_MINIMA_VIAJE_CORTO;
-                } else 
-                if (distanceKm < 8 && distanceKm > 3) {
-                    costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM ;
-                }if (distanceKm > 8 && distanceKm <15) {
-                    costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM
-                    calculoDescuento = (costoViaje + costosAdicionales) * DESCUENTO_LARGA_DISTANCIA;
-                }
-                if (calculoDescuento != 0) {
-                    totalCost = calculoDescuento;
-                }else{
+                if (distanceKm < 2) {
+                    
+                    if (cantidadCargas == 1) {
+                        if (incremento_especial != 0) {
+                            totalCost = TARIFA_MINIMA_VIAJE_CORTO + incremento_especial;
+                            
+                        }else{
+                            totalCost = TARIFA_MINIMA_VIAJE_CORTO;
+                        }
+                        
+                    }else{
+                        totalCost = TARIFA_MINIMA_VIAJE_CORTO + costosAdicionales;
+                    }
+                    
+                } else if (distanceKm > 2 && distanceKm < 8) {
+                    costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM;
                     totalCost = costoViaje + costosAdicionales;
+                } else if (distanceKm >= 8 && distanceKm < 15) {
+                    costoViaje = distanceKm * FACTOR_CALCULO_KM * PRECIO_BASE_KM;
+                    let costoTotalSinDescuento = costoViaje + costosAdicionales;
+                    calculoDescuento = costoTotalSinDescuento * DESCUENTO_LARGA_DISTANCIA;
+                    totalCost = calculoDescuento;
                 }
-                  
-
                 
-
                 const formatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' });
                 distanceOutput.innerText = `${distanceKm.toFixed(2)} km`;
                 costOutput.innerText = formatter.format(totalCost);
@@ -492,217 +545,218 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Error de enrutamiento:", e);
         });
     });
-});
 
-async function handleConfirmTrip() {
-    // ... (Toda tu función para confirmar el viaje y enviar a WhatsApp se mantiene igual) ...
-}
-
-// --- CAMBIO 3: ELIMINACIÓN DEL CÓDIGO CONFLICTIVO ---
-// Se eliminó por completo el segundo bloque 'DOMContentLoaded' que tenías al final de tu archivo.
-// Ese bloque estaba causando conflictos y era innecesario.
-
-/**
- * MODIFICADO: Prepara el mensaje de WhatsApp, guarda los datos en el servidor y abre la aplicación.
- */
-async function handleConfirmTrip() {
-    // Recolectar todos los datos necesarios para la cotización y el mensaje de WhatsApp
-    const quoteDetails = {
-        nombre: document.getElementById('nombrePersona').value,
-        // Usar los valores de los inputs directamente o los confirmados si existen
-        origen: document.getElementById('addressA-input').value || confirmedPoints.A.address,
-        destino: document.getElementById('addressB-input').value || confirmedPoints.B.address,
-        distancia: document.getElementById('distance-output').textContent,
-        costo: document.getElementById('cost-output').textContent,
-        cantidadCargas: document.getElementById('cantidadCargas').value,
-        ayudaCargar: document.getElementById('ayudaCargarSi').checked ? 'Sí' : 'No',
-        //ayudaDescargar: document.getElementById('ayudaDescargarSi').checked ? 'Sí' : 'No',
-        ascensor: document.getElementById('ascensorSi').checked ? 'Sí' : 'No',
-        escaleras: document.getElementById('escalerasSi').checked ? 'Sí' : 'No',
-        fecha: document.getElementById('programarFecha').checked ? `${document.getElementById('fecha').value} a las ${document.getElementById('hora').value}` : 'Ahora mismo',
-        descripcion: document.getElementById('descripcionAdicional').value || 'Sin descripción.'
-    };
-
-    // --- LÓGICA DE GUARDADO EN EL SERVIDOR ---
-    const datosParaGuardar = new FormData();
-    datosParaGuardar.append('nombre', quoteDetails.nombre);
-    datosParaGuardar.append('origen', quoteDetails.origen);
-    datosParaGuardar.append('destino', quoteDetails.destino);
-    datosParaGuardar.append('distancia', quoteDetails.distancia);
-    datosParaGuardar.append('costo', quoteDetails.costo);
-    // Asegúrate que el campo 'fecha' coincida con lo que tu PHP espera
-    datosParaGuardar.append('fecha', quoteDetails.fecha);
-    datosParaGuardar.append('timestamp', new Date().toISOString()); // Fecha y hora exacta de la solicitud
-    datosParaGuardar.append('descripcion_adicional', quoteDetails.descripcion); // Campo para la descripción adicional
-
-    try {
-        // La ruta corregida para tu estructura de carpetas: index.php (raíz) -> assets/php/guardar_viaje.php
-        const response = await fetch('assets/php/guardar_viaje.php', {
-            method: 'POST',
-            body: datosParaGuardar
-        });
-        const result = await response.json(); // Espera la respuesta JSON de PHP
-
-        if (result.status === 'success') {
-            console.log('Viaje guardado en el servidor exitosamente:', result.message);
-        } else {
-            // Esto mostrará cualquier error que PHP haya retornado
-            console.error('Error del servidor al guardar el viaje:', result.message);
-        }
-    } catch (error) {
-        // Esto captura errores de red o del lado del cliente antes de recibir respuesta de PHP
-        console.error('Error de conexión o al procesar la respuesta al intentar guardar el viaje:', error);
-    }
-    // --- FIN DE LA LÓGICA DE GUARDADO ---
-
-    // 3. Construir el mensaje de WhatsApp (tu código original)
-    const message = `
-¡Hola Fletes-Ya! Quisiera solicitar el siguiente servicio:
---------------------------------------
-*Nombre:* ${quoteDetails.nombre}
-*Origen:* ${quoteDetails.origen}
-*Destino:* ${quoteDetails.destino}
-*Distancia:* ${quoteDetails.distancia}
-*Costo Estimado:* ${quoteDetails.costo}
---------------------------------------
-*Detalles Adicionales:*
-- Cargas: ${quoteDetails.cantidadCargas}
-- Ayuda Carga: ${quoteDetails.ayudaCargar}
-- Ascensor: ${quoteDetails.ascensor}
-- Escaleras: ${quoteDetails.escaleras}
-- Pisos: ${quoteDetails.pisosEscalera}
-- Cuándo: ${quoteDetails.fecha}
-- Descripción: ${quoteDetails.descripcion}
---------------------------------------
-Por favor, contáctenme para coordinar. ¡Gracias!
-    `.trim().replace(/^\s+/gm, ''); // Elimina espacios iniciales y finales de cada línea
-
-    // 4. Abrir WhatsApp
-    const numeroWhatsApp = '5493815827335'; // Asegúrate de que este número sea correcto y completo con código de país
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank'); // Abre en una nueva pestaña
-}
-
-
-
-
-
-
-
-
-
-
-
-
-// Codigo para sugerencia de direcciones en mapa y en campo
-document.addEventListener('DOMContentLoaded', () => {
-
-
+    hideMessages();
 
     // --- INICIO: Lógica de Autocompletado para Inputs Principales ---
+    // --- Función Auxiliar para Formatear Direcciones (VERSIÓN ESPECÍFICA SOLICITADA) ---
+    function formatAddressForDisplay(place) {
+        const parts = place.display_name.split(',');
+        let formattedParts = [];
 
-/**
- * Función reutilizable para inicializar el autocompletado en un campo de dirección.
- * @param {string} inputId ID del campo de texto (ej: 'addressA-input').
- * @param {string} containerId ID del div que mostrará las sugerencias.
- * @param {string} latId ID del campo oculto para la latitud.
- * @param {string} lngId ID del campo oculto para la longitud.
- * @param {string} displayId ID del campo oculto para la dirección completa.
- */
-function initializeMainAutocomplete(inputId, containerId, latId, lngId, displayId) {
-    const addressInput = document.getElementById(inputId);
-    const suggestionsContainer = document.getElementById(containerId);
-    const latInput = document.getElementById(latId);
-    const lngInput = document.getElementById(lngId);
-    const displayInput = document.getElementById(displayId);
+        // Asegurarse de que tenemos suficientes partes antes de acceder a ellas
+        // display_name: "732, General Lamadrid, Barrio Sur, San Miguel de Tucumán, Departamento Capital, Tucumán, T4000, Argentina"
+        // Posiciones deseadas: [1] General Lamadrid, [0] 732, [3] San Miguel de Tucumán, [5] Tucumán
 
-    let debounceTimeout;
+        const streetName = parts[1] ? parts[1].trim() : '';
+        const houseNumber = parts[0] ? parts[0].trim() : '';
+        const city = parts[3] ? parts[3].trim() : '';
+        const province = parts[5] ? parts[5].trim() : '';
 
-    addressInput.addEventListener('input', () => {
-        clearTimeout(debounceTimeout);
-        const query = addressInput.value.trim();
-
-        if (query.length < 3) {
-            suggestionsContainer.innerHTML = '';
-            return;
+        if (streetName) {
+            formattedParts.push(streetName);
         }
+        if (houseNumber) {
+            formattedParts.push(houseNumber);
+        }
+        if (city) {
+            formattedParts.push(city);
+        }
+        if (province) {
+            formattedParts.push(province);
+        }
+        
+        return formattedParts.filter(p => p).join(', '); // Filtra elementos vacíos y une
+    }
 
-        debounceTimeout = setTimeout(async () => {
-            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}, Tucumán, Argentina&format=json&limit=4`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                suggestionsContainer.innerHTML = ''; // Limpiar sugerencias anteriores
-                data.forEach(place => {
-                    const item = document.createElement('a');
-                    item.href = '#';
-                    item.className = 'list-group-item list-group-item-action';
-                    item.textContent = place.display_name;
-                    
-                    item.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        
-                        // Rellenar el input visible y los campos ocultos
-                        addressInput.value = place.display_name;
-                        latInput.value = parseFloat(place.lat);
-                        lngInput.value = parseFloat(place.lon);
-                        displayInput.value = place.display_name;
-                        
-                        // Ocultar las sugerencias
-                        suggestionsContainer.innerHTML = '';
-                    });
-                    
-                    suggestionsContainer.appendChild(item);
-                });
-            } catch (error) {
-                console.error('Error al obtener sugerencias:', error);
+
+    // --- Nueva Versión de initializeMainAutocomplete ---
+    function initializeMainAutocomplete(inputId, containerId, latId, lngId, displayId) {
+        const addressInput = document.getElementById(inputId);
+        const suggestionsContainer = document.getElementById(containerId);
+        const latInput = document.getElementById(latId);
+        const lngInput = document.getElementById(lngId);
+        const displayInput = document.getElementById(displayId);
+
+        let debounceTimeout;
+
+        addressInput.addEventListener('input', () => {
+            clearTimeout(debounceTimeout);
+            const query = addressInput.value.trim();
+
+            if (query.length < 3) {
+                suggestionsContainer.innerHTML = '';
+                return;
             }
-        }, 350); // 350ms de espera antes de buscar
-    });
 
-    // Opcional: Ocultar sugerencias si el usuario hace clic fuera
-    document.addEventListener('click', function(event) {
-        if (!addressInput.contains(event.target)) {
-            suggestionsContainer.innerHTML = '';
-        }
-    });
-}
+            debounceTimeout = setTimeout(async () => {
+                try {
+                    // Coordenadas aproximadas para el bounding box de San Miguel de Tucumán (Capital)
+                    const bBoxTucumanCapital = [-65.26, -26.86, -65.17, -26.75]; // Oeste, Sur, Este, Norte
+                    const countryCode = 'ar';
+                    const state = 'Tucumán';
 
-// Ahora, llamamos a la función para inicializar ambos campos
-initializeMainAutocomplete(
-    'addressA-input', 
-    'suggestions-A-container', 
-    'latA', 
-    'lngA', 
-    'display-addressA'
-);
+                    let combinedResults = [];
 
-initializeMainAutocomplete(
-    'addressB-input', 
-    'suggestions-B-container', 
-    'latB', 
-    'lngB', 
-    'display-addressB'
-);
+                    // 1. Consulta para San Miguel de Tucumán (Capital)
+                    const urlCapital = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&bounded=1&viewbox=${bBoxTucumanCapital.join(',')}&city=San Miguel de Tucumán&countrycodes=${countryCode}`;
+                    const responseCapital = await fetch(urlCapital);
+                    const dataCapital = await responseCapital.json();
 
-// --- FIN: Lógica de Autocompletado ---
+                    const capitalResults = dataCapital.filter(place => 
+                        (place.address.city === 'San Miguel de Tucumán' || 
+                        place.address.town === 'San Miguel de Tucumán' ||
+                        (place.display_name && place.display_name.includes('San Miguel de Tucumán')))
+                        && (!place.address.suburb || place.address.road) // Intentar priorizar calles sobre barrios solos
+                    ).slice(0, 3); 
+
+                    combinedResults = [...capitalResults];
+
+                    // 2. Consulta para el resto de la Provincia de Tucumán
+                    const urlProvince = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}, ${state}, ${countryCode}&format=json&limit=7`;
+                    const responseProvince = await fetch(urlProvince);
+                    const dataProvince = await responseProvince.json();
+
+                    const otherProvinceResults = dataProvince.filter(place => {
+                        const isCapital = (place.address.city === 'San Miguel de Tucumán' || place.address.town === 'San Miguel de Tucumán');
+                        const alreadyInCombined = combinedResults.some(res => res.place_id === place.place_id);
+                        return !isCapital && !alreadyInCombined;
+                    }).slice(0, 4); 
+
+                    combinedResults = [...combinedResults, ...otherProvinceResults];
+
+                    suggestionsContainer.innerHTML = ''; 
+
+                    if (combinedResults.length === 0) {
+                        const noResultsItem = document.createElement('div');
+                        noResultsItem.className = 'list-group-item text-muted';
+                        noResultsItem.textContent = 'No se encontraron sugerencias.';
+                        suggestionsContainer.appendChild(noResultsItem);
+                        return;
+                    }
+
+                    // Mostrar las sugerencias combinadas (ahora formateadas)
+                    combinedResults.forEach(place => {
+                        const item = document.createElement('a');
+                        item.href = '#';
+                        item.className = 'list-group-item list-group-item-action';
+                        // *** USAMOS LA NUEVA FUNCIÓN DE FORMATO AQUÍ PARA LAS SUGERENCIAS ***
+                        item.textContent = formatAddressForDisplay(place); 
+
+                        item.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            // *** USAMOS LA NUEVA FUNCIÓN DE FORMATO AQUÍ TAMBIÉN PARA EL CAMPO VISIBLE Y DISPLAY ***
+                            const formattedAddress = formatAddressForDisplay(place);
+                            addressInput.value = formattedAddress;
+                            
+                            latInput.value = parseFloat(place.lat);
+                            lngInput.value = parseFloat(place.lon);
+                            
+                            const pointType = inputId === 'addressA-input' ? 'A' : 'B';
+                            confirmedPoints[pointType] = {
+                                lat: parseFloat(place.lat),
+                                lng: parseFloat(place.lon),
+                                address: formattedAddress // Guardar la dirección formateada
+                            };
+
+                            displayInput.value = formattedAddress; 
+                            
+                            suggestionsContainer.innerHTML = ''; 
+                        });
+                        suggestionsContainer.appendChild(item);
+                    });
+
+                } catch (error) {
+                    console.error('Error al obtener sugerencias:', error);
+                    suggestionsContainer.innerHTML = '<div class="list-group-item text-danger">Error al cargar sugerencias.</div>';
+                }
+            }, 350);
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!addressInput.contains(event.target) && !suggestionsContainer.contains(event.target)) {
+                suggestionsContainer.innerHTML = '';
+            }
+        });
+    }
+
+    initializeMainAutocomplete(
+        'addressA-input', 
+        'suggestions-A-container', 
+        'latA', 
+        'lngA', 
+        'display-addressA'
+    );
+
+    initializeMainAutocomplete(
+        'addressB-input', 
+        'suggestions-B-container', 
+        'latB', 
+        'lngB', 
+        'display-addressB'
+    );
+    // --- FIN: Lógica de Autocompletado ---
 
 
+    // --- INICIO: Lógica del MutationObserver ---
+    const displayAddressA = document.getElementById('display-addressA');
+    const displayAddressB = document.getElementById('display-addressB');
+
+    if (displayAddressA && geocodeAButton) {
+        const observerA = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    const newAddress = displayAddressA.value;
+                    if (newAddress && newAddress !== 'Ubicación seleccionada') {
+                        geocodeAButton.textContent = newAddress;
+                    } else {
+                        geocodeAButton.textContent = 'Punto A (Origen)';
+                    }
+                }
+            }
+        });
+        observerA.observe(displayAddressA, { attributes: true });
+    } else {
+        console.warn("Elemento 'display-addressA' o 'geocode-A-btn' no encontrado.");
+    }
+
+    if (displayAddressB && geocodeBButton) {
+        const observerB = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    const newAddress = displayAddressB.value;
+                    if (newAddress && newAddress !== 'Ubicación seleccionada') {
+                        geocodeBButton.textContent = newAddress;
+                    } else {
+                        geocodeBButton.textContent = 'Punto B (Destino)';
+                    }
+                }
+            }
+        });
+        observerB.observe(displayAddressB, { attributes: true });
+    } else {
+        console.warn("Elemento 'display-addressB' o 'geocode-B-btn' no encontrado.");
+    }
+    // --- FIN: Lógica del MutationObserver ---
 
 
     // Referencias a los elementos de búsqueda del modal
     const mapSearchInput = document.getElementById('map-search-input');
     const mapSearchBtn = document.getElementById('map-search-btn');
-    const suggestionsContainer = document.getElementById('suggestions-container');
+    const modalSuggestionsContainer = document.getElementById('suggestions-container'); // Renombrado para evitar confusión
 
-    // **NUEVO: Variable para guardar la selección del autocompletado**
-    // Esto es clave para no tener que volver a buscar.
     let selectionFromSuggestions = null;
 
-    /**
-     * Función principal para el botón "Ir". AHORA ES MÁS INTELIGENTE.
-     */
     const geocodeAndCenterInModal = async () => {
         const addressQuery = mapSearchInput.value.trim();
         if (!addressQuery) {
@@ -710,111 +764,117 @@ initializeMainAutocomplete(
             return;
         }
 
-        // **LÓGICA CORREGIDA:**
-        // 1. ¿El texto del input coincide con la última sugerencia seleccionada?
-        if (selectionFromSuggestions && selectionFromSuggestions.name === addressQuery) {
-            // ¡Perfecto! Ya tenemos las coordenadas, no hay que buscar de nuevo.
-            updateMapWithCoordinates(selectionFromSuggestions);
+        let result = null;
+        if (selectionFromSuggestions) {
+            // Usar la selección previa si existe
+            result = selectionFromSuggestions;
+            selectionFromSuggestions = null; // Resetear después de usar
         } else {
-            // 2. Si no coincide, es una búsqueda manual. Geocodificamos.
-            const result = await geocodeAddress(addressQuery + ", Tucumán");
-            if (result) {
-                updateMapWithCoordinates({
-                    lat: result.lat,
-                    lng: result.lng,
-                    name: result.address
-                });
-            } else {
-                alert(`No se encontraron resultados para "${addressQuery}". Intenta ser más específico.`);
-            }
-        }
-    };
-    
-    /**
-     * NUEVA FUNCIÓN ASISTENTE: Actualiza el mapa y las variables.
-     * Esto evita repetir código.
-     * @param {object} locationData - Un objeto con {lat, lng, name}
-     */
-    function updateMapWithCoordinates(locationData) {
-        const newLatLng = [locationData.lat, locationData.lng];
+            // Realizar una nueva geocodificación
+            const loadingModalDiv = document.getElementById('loading-modal'); // Asume que tienes un div de carga en tu modal
+            if (loadingModalDiv) loadingModalDiv.style.display = 'block';
 
-        // 1. Centra el mapa en la coordenada.
-        mapModal.setView(newLatLng, 17);
-
-        // 2. Maneja el marcador temporal.
-        if (!temporaryMarker) {
-            temporaryMarker = L.marker(newLatLng, { draggable: true }).addTo(mapModal);
-        } else {
-            temporaryMarker.setLatLng(newLatLng);
-        }
-
-        // 3. Actualiza tu objeto de selección temporal para el botón "Confirmar".
-        temporarySelection.lat = locationData.lat;
-        temporarySelection.lng = locationData.lng;
-        temporarySelection.address = locationData.name;
-        
-        // Limpia el input y las sugerencias para evitar confusiones.
-        mapSearchInput.value = locationData.name;
-        suggestionsContainer.innerHTML = '';
-    }
-
-    // --- Lógica de Autocompletado (Corregida) ---
-
-    const fetchSuggestions = async (query) => {
-        if (query.length < 3) {
-            suggestionsContainer.innerHTML = '';
-            return;
-        }
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}, Tucumán, Argentina&format=json&limit=4`;
-        try {
-            const response = await fetch(url);
+            // Aquí asumo que geocodeAddress devuelve un objeto con al menos display_name, lat, lon
+            // Si solo devuelve una cadena, esta parte necesitará más lógica
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQuery)}, Tucumán, Argentina&format=json&limit=1`);
             const data = await response.json();
-            
-            suggestionsContainer.innerHTML = ''; // Limpiar
-            data.forEach(place => {
-                const item = document.createElement('a');
-                item.href = '#';
-                item.className = 'list-group-item list-group-item-action';
-                item.textContent = place.display_name;
-                
-                // Al hacer clic en una sugerencia:
-                item.onclick = (e) => {
-                    e.preventDefault();
-                    // 1. Guardamos los datos completos de la sugerencia (incluidas las coordenadas)
-                    selectionFromSuggestions = {
-                        lat: parseFloat(place.lat),
-                        lng: parseFloat(place.lon),
-                        name: place.display_name
-                    };
-                    // 2. Ponemos el nombre en el input
-                    mapSearchInput.value = place.display_name;
-                    // 3. Ocultamos la lista de sugerencias
-                    suggestionsContainer.innerHTML = '';
+            if (data && data.length > 0) {
+                const place = data[0];
+                result = {
+                    lat: parseFloat(place.lat),
+                    lng: parseFloat(place.lon),
+                    address: formatAddressForDisplay(place) // Formatea la dirección aquí
                 };
-                suggestionsContainer.appendChild(item);
-            });
-        } catch(e) {
-            console.error("Error fetching suggestions:", e);
+            } else {
+                result = null;
+            }
+
+            if (loadingModalDiv) loadingModalDiv.style.display = 'none';
+        }
+
+        if (result && mapModal) {
+            mapModal.setView([result.lat, result.lng], 16);
+            if (!temporaryMarker) {
+                temporaryMarker = L.marker([result.lat, result.lng], { draggable: true }).addTo(mapModal);
+            } else {
+                temporaryMarker.setLatLng([result.lat, result.lng]);
+            }
+            temporarySelection.lat = result.lat;
+            temporarySelection.lng = result.lng;
+            temporarySelection.address = result.address;
+
+            // Actualiza el input del modal con la dirección formateada
+            mapSearchInput.value = result.address;
+        } else {
+            alert('No se encontró la dirección. Intenta ser más específico.');
         }
     };
-    
-    // Disparador del autocompletado con "debounce"
-    let debounceTimeout;
-    mapSearchInput.addEventListener('input', () => {
-        clearTimeout(debounceTimeout);
-        // Si el usuario borra el texto, reseteamos la selección guardada
-        if(mapSearchInput.value.trim() === '') {
-            selectionFromSuggestions = null;
-        }
-        debounceTimeout = setTimeout(() => fetchSuggestions(mapSearchInput.value), 350);
-    });
 
-    // --- ASIGNACIÓN DE EVENTOS ---
-    mapSearchBtn.addEventListener('click', geocodeAndCenterInModal);
-    mapSearchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            geocodeAndCenterInModal();
-        }
-    });
+    if (mapSearchBtn) {
+        mapSearchBtn.addEventListener('click', geocodeAndCenterInModal);
+    }
+    // Evento para Enter en el campo de búsqueda del modal
+    if (mapSearchInput) {
+        mapSearchInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Evita el envío del formulario
+                geocodeAndCenterInModal();
+            }
+        });
+
+        // Lógica de autocompletado para el campo de búsqueda del modal
+        let debounceModalTimeout;
+        mapSearchInput.addEventListener('input', () => {
+            clearTimeout(debounceModalTimeout);
+            const query = mapSearchInput.value.trim();
+
+            if (query.length < 3) {
+                modalSuggestionsContainer.innerHTML = '';
+                return;
+            }
+
+            debounceModalTimeout = setTimeout(async () => {
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}, Tucumán, Argentina&format=json&limit=5`;
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    modalSuggestionsContainer.innerHTML = '';
+                    data.forEach(place => {
+                        const item = document.createElement('a');
+                        item.href = '#';
+                        item.className = 'list-group-item list-group-item-action';
+                        // *** APLICA EL FORMATO AQUÍ PARA LAS SUGERENCIAS DEL MODAL ***
+                        item.textContent = formatAddressForDisplay(place);
+
+                        item.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            // *** Y AQUÍ AL SELECCIONAR LA SUGERENCIA DEL MODAL ***
+                            const selectedFormattedAddress = formatAddressForDisplay(place);
+                            mapSearchInput.value = selectedFormattedAddress;
+                            
+                            selectionFromSuggestions = {
+                                lat: parseFloat(place.lat),
+                                lng: parseFloat(place.lon),
+                                address: selectedFormattedAddress // Guardar la dirección formateada
+                            };
+                            modalSuggestionsContainer.innerHTML = '';
+                            geocodeAndCenterInModal(); // Centra el mapa con la selección
+                        });
+
+                        modalSuggestionsContainer.appendChild(item);
+                    });
+                } catch (error) {
+                    console.error('Error al obtener sugerencias del modal:', error);
+                }
+            }, 350);
+        });
+
+        // Ocultar sugerencias del modal si se hace clic fuera
+        document.addEventListener('click', function(event) {
+            if (!mapSearchInput.contains(event.target) && !modalSuggestionsContainer.contains(event.target)) {
+                modalSuggestionsContainer.innerHTML = '';
+            }
+        });
+    }
 });

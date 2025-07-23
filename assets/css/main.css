@@ -6,7 +6,10 @@
 .delete{
   display: none;
 }
-
+#geocode-A-btn , #geocode-B-btn{
+  color: #f09209;
+  background-color: #4c3519;
+}
 
 
 #suggestions-container .list-group-item {

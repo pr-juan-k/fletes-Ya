@@ -105,9 +105,9 @@
                                         <!--CargarPunto A -->
                                         <div class="col-md-12">
                                             <label for="addressA-input" class="form-label">Punto A (Origen):</label>
-                                            <div class="input-group delete">
-                                                <input type="text" id="addressA-input" class="form-control" placeholder="Ej: Av. Roca 100, Tucumán">
-                                                <button type="button" class="btn btn-outline-secondary" id="geocode-A-btn">Buscar</button>
+                                            <div class="input-group ">
+                                                <input type="text" id="addressA-input" class="form-control delete" placeholder="Ej: Av. Roca 100, Tucumán">
+                                                <button type="button" class="btn btn-outline-secondary" id="geocode-A-btn">Direccion:</button>
                                             </div>
                                             <button type="button" class="btn btn-info mt-2 w-100 text-white" data-bs-toggle="modal" data-bs-target="#mapModal" data-point-type="A">Seleccionar en Mapa (Punto A)</button>
                                             <input type="hidden" id="latA">
@@ -117,9 +117,9 @@
                                         <!--CargarPunto B -->
                                         <div class="col-md-12">
                                             <label for="addressB-input" class="form-label">Punto B (Destino):</label>
-                                            <div class="input-group delete">
-                                                <input type="text" id="addressB-input" class="form-control" placeholder="Ej: San Martín 500, Tucumán">
-                                                <button type="button" class="btn btn-outline-secondary" id="geocode-B-btn">Buscar</button>
+                                            <div class="input-group ">
+                                                <input type="text" id="addressB-input" class="form-control delete" placeholder="Ej: San Martín 500, Tucumán">
+                                                <button type="button" class="btn btn-outline-secondary" id="geocode-B-btn">Direccion:</button>
                                             </div>
                                             <button type="button" class="btn btn-info mt-2 w-100 text-white" data-bs-toggle="modal" data-bs-target="#mapModal" data-point-type="B">Seleccionar en Mapa (Punto B)</button>
                                             <input type="hidden" id="latB">
@@ -162,7 +162,7 @@
                                         </div>
                         
                                         <div class="col-md-12">
-                                            <label class="form-label d-block">¿Hay escaleras en el origen/destino? </label>
+                                            <label class="form-label d-block">¿Hay que subir por escaleras en el origen/destino? </label>
                                             <div class="form-check form-check-inline">
                                                 <input class="form-check-input" type="radio" name="escaleras" id="escalerasSi" value="si" required>
                                                 <label class="form-check-label" for="escalerasSi">Sí</label>
@@ -172,9 +172,10 @@
                                                 <label class="form-check-label" for="escalerasNo">No</label>
                                             </div>
                                         </div>
+                                        
                                         <div class="col-md-12">
-                                            <label for="pisos" class="form-label">Cantidad de pisos:</label>
-                                            <input type="number" class="form-control" id="pisoaEscaleras" name="pisos" min="0" placeholder="Ej: 1" >
+                                            <label for="cantidadCargas2" class="form-label">Cantidad de pisos:</label>
+                                            <input type="number" class="form-control" id="cantidadCargas2" name="cantidadCargas2" min="0" placeholder="Ej: 3" required>
                                         </div>
                         
                                         <div class="col-md-12">
@@ -254,14 +255,14 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="map-search-input" class="form-label">Buscar dirección en Tucumán:</label>
+                        <label for="map-search-input" class="form-label delete">Buscar dirección en Tucumán:</label>
                         <div class="input-group">
                             <input type="text" id="map-search-input" class="form-control" placeholder="Ej: Muñecas 400">
                             <button class="btn btn-primary" type="button" id="map-search-btn">Ir</button>
                         </div>
                         <div id="suggestions-container" class="list-group position-absolute w-100" style="z-index: 1056;"></div>
                     </div>
-                    <p>O haz clic en el mapa para seleccionar un punto.</p>
+
                     <div id="map-modal-container" style="height: 400px; width: 100%;"></div>
                 </div>
                 <div class="modal-footer">
